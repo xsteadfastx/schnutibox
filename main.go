@@ -1,17 +1,11 @@
 // https://medium.com/coinmonks/iot-tutorial-read-tags-from-a-usb-rfid-reader-with-raspberry-pi-and-node-red-from-scratch-4554836be127
-// nolint: gochecknoglobals, lll, forbidigo, godox
+// nolint: gochecknoglobals, lll, forbidigo
 package main
 
 import (
 	"fmt"
 	"log"
-
-	"github.com/karalabe/hid"
-)
-
-const (
-	product = 0x27db
-	vendor  = 0x16c0
+	"os"
 )
 
 const newLine = 40
@@ -30,9 +24,7 @@ var charMap = map[byte]string{
 }
 
 func main() {
-	readerInfo := hid.Enumerate(vendor, product)[0]
-
-	d, err := readerInfo.Open()
+	d, err := os.Open("/dev/hidraw7")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -46,7 +38,6 @@ func main() {
 
 		for {
 			// Reading the RFID reader.
-			// TODO: Check if "/dev/hidraw" can be used.
 			_, err := d.Read(buf)
 			if err != nil {
 				log.Print(err)
