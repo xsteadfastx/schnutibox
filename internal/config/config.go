@@ -29,7 +29,10 @@ type Config struct {
 	} `mapstructure:"Meta"`
 
 	// Tracks contains all RFID's and its MPD URLs.
-	Tracks map[string][]string `mapstructure:"Tracks"`
+	Tracks map[string]struct {
+		Name string   `mapstructure:"Name"`
+		URIS []string `mapstructure:"URIS"`
+	} `mapstructure:"Tracks"`
 }
 
 func (c *Config) Require() error {
