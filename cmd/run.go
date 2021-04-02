@@ -9,4 +9,7 @@ var runCmd = &cobra.Command{
 	Use:   "run",
 	Short: "Running this thing",
 	Run:   run.Run,
+	PreRun: func(cmd *cobra.Command, args []string) {
+		initConfig()
+	},
 }

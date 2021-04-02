@@ -4,6 +4,8 @@ go 1.16
 
 require (
 	github.com/fhs/gompd/v2 v2.2.0
+	github.com/fsnotify/fsnotify v1.4.7
+	github.com/manifoldco/promptui v0.8.0
 	github.com/prometheus/client_golang v0.9.3
 	github.com/rs/zerolog v1.21.0
 	github.com/spf13/cobra v1.1.3

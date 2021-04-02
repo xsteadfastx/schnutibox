@@ -27,11 +27,12 @@ var rootCmd = &cobra.Command{
 
 // init initializes the command line interface.
 func init() {
-	cobra.OnInitialize(initConfig)
-	rootCmd.PersistentFlags().StringVarP(&cfgFile, "config", "c", "", "config file")
-
 	// Run.
 	rootCmd.AddCommand(runCmd)
+	runCmd.Flags().StringVarP(&cfgFile, "config", "c", "", "config file")
+	if err := runCmd.MarkFlagRequired("config"); err != nil {
+		log.Fatal().Err(err).Msg("missing flag")
+	}
 
 	// Prepare.
 	rootCmd.AddCommand(prepareCmd)
