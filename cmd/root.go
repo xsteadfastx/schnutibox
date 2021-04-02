@@ -6,6 +6,8 @@ import (
 	"os"
 	"strings"
 
+	"github.com/fsnotify/fsnotify"
+	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -26,38 +28,56 @@ var rootCmd = &cobra.Command{
 // init initializes the command line interface.
 func init() {
 	cobra.OnInitialize(initConfig)
-	rootCmd.AddCommand(runCmd)
 	rootCmd.PersistentFlags().StringVarP(&cfgFile, "config", "c", "", "config file")
 
-	// Defaults
-	viper.SetDefault("box.hostname", "localhost")
-	viper.SetDefault("box.port", 9999)
-	viper.SetDefault("mpd.hostname", "localhost")
-	viper.SetDefault("mpd.port", 6600)
-	viper.SetDefault("reader.dev", "/dev/hidraw0")
+	// Run.
+	rootCmd.AddCommand(runCmd)
+
+	// Prepare.
+	rootCmd.AddCommand(prepareCmd)
 }
 
 // initConfig loads the config file.
 // TODO: needs some environment variable love!
 func initConfig() {
 	logger := log.With().Str("config", cfgFile).Logger()
+
+	// Defaults.
+	viper.SetDefault("box.hostname", "localhost")
+	viper.SetDefault("box.port", 9999)
+	viper.SetDefault("mpd.hostname", "localhost")
+	viper.SetDefault("mpd.port", 6600)
+	viper.SetDefault("reader.dev", "/dev/hidraw0")
+
+	// Environment handling.
 	viper.SetEnvPrefix("SCHNUTIBOX")
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	viper.AutomaticEnv()
 
+	// Parse config file.
 	if cfgFile != "" {
 		viper.SetConfigFile(cfgFile)
-		if err := viper.ReadInConfig(); err != nil {
-			logger.Fatal().Err(err).Msg("error loading config file")
-		}
-		if err := viper.Unmarshal(&config.Cfg); err != nil {
-			logger.Fatal().Err(err).Msg("could not unmarshal config")
-		}
-		if err := config.Cfg.Require(); err != nil {
-			logger.Fatal().Err(err).Msg("missing config parts")
-		}
+		parseConfig(logger)
 	} else {
 		logger.Fatal().Msg("missing config file")
+	}
+
+	viper.WatchConfig()
+	viper.OnConfigChange(func(e fsnotify.Event) {
+		logger.Info().Msg("config file changed")
+		parseConfig(logger)
+	})
+}
+
+func parseConfig(logger zerolog.Logger) {
+	if err := viper.ReadInConfig(); err != nil {
+		logger.Fatal().Err(err).Msg("error loading config file")
+	}
+	if err := viper.Unmarshal(&config.Cfg); err != nil {
+		logger.Fatal().Err(err).Msg("could not unmarshal config")
+	}
+	if err := config.Cfg.Require(); err != nil {
+		logger.Fatal().Err(err).Msg("missing config parts")
 	}
 }
 
