@@ -1,0 +1,22 @@
+[core]
+cache_dir = /var/cache/mopidy
+config_dir = /etc/mopidy/
+
+[audio]
+output = alsasink
+mixer = alsamixer
+
+[alsamixer]
+card = 0
+control= Headphone
+
+[mpd]
+hostname = 0.0.0.0
+
+{{if .Spotify}}
+[spotify]
+username = {{.SpotifyUsername}}
+password = {{.SpotifyPassword}}
+client_id = {{.SpotifyClientID}}
+client_secret = {{.SpotifyClientSecret}}
+{{end}}

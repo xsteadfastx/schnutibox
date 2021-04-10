@@ -1,0 +1,10 @@
+proc            /proc                     proc    defaults                                                                 0  0
+/dev/mmcblk0p1  /boot                     vfat    ro,defaults                                                              0  2
+/dev/mmcblk0p2  /                         ext4    ro,defaults,noatime                                                      0  1
+tmpfs           /var/log                  tmpfs   nodev,nosuid                                                             0  0
+tmpfs           /var/tmp                  tmpfs   nodev,nosuid                                                             0  0
+tmpfs           /tmp                      tmpfs   nodev,nosuid                                                             0  0
+tmpfs           /var/lib/systemd/timesync tmpfs   auto,noatime,size=5m,mode=0755,uid={{.TimesyncUID}},gid={{.TimesyncGID}} 0  0
+tmpfs           /var/cache/mopidy         tmpfs   auto,noatime,size=5m,mode=0755,uid={{.MopidyUID}},gid={{.MopidyGID}}     0  0
+tmpfs           /var/cache/upmpdcli       tmpfs   auto,noatime,size=5m,mode=0755,uid={{.UpmpdcliUID}},gid={{.UpmpdcliGID}} 0  0
+tmpfs           /var/lib/ntp              tmpfs   nosuid,nodev                                                             0  0

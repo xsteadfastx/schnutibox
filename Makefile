@@ -12,12 +12,25 @@ generate:
 
 .PHONY: lint
 lint:
-	golangci-lint run
+	golangci-lint run --enable-all --disable=exhaustivestruct
 
 .PHONY: test
 test:
 	go test -v -race -cover ./...
 
+.PHONY: test-integration
+test-integration: release
+	go test -v -tags=integration -timeout=120m
+
 .PHONY: readme
 readme:
 	goreadme -title revive > README.md
+
+.PHONY: tidy
+tidy:
+	go mod tidy
+	go mod vendor
+
+.PHONY: build-image
+build-image:
+	sudo ./scripts/build.sh

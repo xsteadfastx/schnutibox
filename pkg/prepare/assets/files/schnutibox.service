@@ -1,0 +1,11 @@
+[Unit]
+Description=schnutibox
+
+[Service]
+Type=simple
+User=schnutibox
+Group=schnutibox
+ExecStart=/usr/local/bin/schnutibox run -c /etc/schnutibox/schnutibox.yml
+
+[Install]
+WantedBy=multi-user.target
