@@ -109,6 +109,10 @@ func Run(cmd *cobra.Command, args []string) {
 					logger.Error().Err(err).Msg("could not stop")
 				}
 
+				if err := m.clear(logger); err != nil {
+					logger.Error().Err(err).Msg("could not clear")
+				}
+
 				continue
 			}
 
