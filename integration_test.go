@@ -19,11 +19,18 @@ import (
 )
 
 const (
-	sdcard   = "/home/marv/tmp/2021-03-04-raspios-buster-armhf-lite.img"
-	sshUser  = "pi"
-	sshPass  = "raspberry"
-	sshHost  = "localhost"
-	bootWait = 3 * time.Minute
+	sdcard           = "/home/marv/tmp/2021-03-04-raspios-buster-armhf-lite.img"
+	sshUser          = "pi"
+	sshPass          = "raspberry"
+	sshHost          = "localhost"
+	containerTimeout = 5 * time.Minute
+)
+
+// Variables used for accessing stuff in the test functions.
+// nolint:gochecknoglobals
+var (
+	sshConn string
+	client  *sshclient.Client
 )
 
 // raspbianWorkCopy creates a temp image file.
@@ -83,10 +90,23 @@ func copySchnutibox(user, pass, host string) error {
 	return nil
 }
 
-//nolint:funlen
-func TestIntegration(t *testing.T) {
-	t.Parallel()
+// teardown removes some temp test stuff.
+func teardown(img string, pool *dockertest.Pool, resource *dockertest.Resource) {
+	log.Info().Msg("getting rid of container")
 
+	if err := pool.Purge(resource); err != nil {
+		log.Fatal().Err(err).Msg("could not cleanup")
+	}
+
+	log.Info().Str("img", img).Msg("deleting temp image")
+
+	if err := os.Remove(img); err != nil {
+		log.Fatal().Err(err).Msg("could not delete temp image")
+	}
+}
+
+// nolint:funlen
+func TestMain(m *testing.M) {
 	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 
 	// Create tmp image.
@@ -99,13 +119,11 @@ func TestIntegration(t *testing.T) {
 
 	pool, err := dockertest.NewPool("")
 	if err != nil {
-		log.Error().Err(err).Msg("could not connect to docker")
-		t.Fatal()
+		log.Fatal().Err(err).Msg("could not connect to docker")
 	}
 
 	if err != nil {
-		log.Error().Err(err).Msg("could not get pwd")
-		t.Fatal()
+		log.Fatal().Err(err).Msg("could not get pwd")
 	}
 
 	log.Info().Msg("starting container")
@@ -118,54 +136,55 @@ func TestIntegration(t *testing.T) {
 			ExposedPorts: []string{"5022/tcp"},
 		})
 	if err != nil {
-		log.Error().Err(err).Msg("could not start resource")
-		t.Fatal()
+		log.Fatal().Err(err).Msg("could not start resource")
 	}
-
-	// Register cleanup.
-	t.Cleanup(func() {
-		log.Info().Msg("getting rid of container")
-		if err := pool.Purge(resource); err != nil {
-			log.Error().Err(err).Msg("could not cleanup")
-			t.Fatal()
-		}
-
-		log.Info().Str("img", img).Msg("deleting temp image")
-		if err := os.Remove(img); err != nil {
-			log.Error().Err(err).Msg("could not delete temp image")
-			t.Fatal()
-		}
-	})
 
 	// Starting container.
 	log.Info().Msg("waiting to be ready")
 
-	sshConn := sshHost + ":" + resource.GetPort("5022/tcp")
+	sshConn = sshHost + ":" + resource.GetPort("5022/tcp")
 
-	if err := pool.Retry(func() error {
-		time.Sleep(bootWait)
-		client, err := sshclient.DialWithPasswd(sshConn, sshUser, sshPass)
-		if err != nil {
-			return err
+	// Channels for checking readyness of the container.
+	sshReady := make(chan struct{})
+	sshError := make(chan error)
+
+	// Constant check for readyness of container.
+	go func() {
+		for {
+			client, err := sshclient.DialWithPasswd(sshConn, sshUser, sshPass)
+			if err == nil {
+				if err := client.Close(); err != nil {
+					sshError <- err
+				}
+				sshReady <- struct{}{}
+			}
+
+			log.Debug().Msg("container not ready yet")
+			time.Sleep(5 * time.Second)
 		}
+	}()
 
-		if err := client.Close(); err != nil {
-			return err
-		}
-
-		return nil
-	}); err != nil {
+	select {
+	case err := <-sshError:
 		log.Error().Err(err).Msg("could not connect to container via ssh")
-		t.Fatal()
+		teardown(img, pool, resource)
+		os.Exit(1)
+	case <-time.After(containerTimeout):
+		log.Error().Msg("timeout. could not connect to container via ssh")
+		teardown(img, pool, resource)
+		os.Exit(1)
+	case <-sshReady:
+		log.Info().Msg("container is ready")
 	}
 
 	// Connect via SSH.
 	log.Info().Msg("connect via ssh")
 
-	client, err := sshclient.DialWithPasswd(sshConn, sshUser, sshPass)
+	client, err = sshclient.DialWithPasswd(sshConn, sshUser, sshPass)
 	if err != nil {
 		log.Error().Err(err).Msg("could not connect via ssh")
-		t.Fatal()
+		teardown(img, pool, resource)
+		os.Exit(1)
 	}
 
 	// Copy schnutibox binary to container.
@@ -177,7 +196,8 @@ func TestIntegration(t *testing.T) {
 
 	if err := copySchnutibox(sshUser, sshPass, sshConn); err != nil {
 		log.Error().Err(err).Msg("could not copy schnutibox")
-		t.Fatal()
+		teardown(img, pool, resource)
+		os.Exit(1)
 	}
 
 	// Move schnutibox to /usr/local/bin
@@ -188,17 +208,51 @@ func TestIntegration(t *testing.T) {
 		SetStdio(os.Stdout, os.Stderr).
 		Run(); err != nil {
 		log.Error().Err(err).Msg("could not create /usr/local/bin on container")
-		t.Fatal()
+		teardown(img, pool, resource)
+		os.Exit(1)
 	}
 
 	// Doing the testing.
 	log.Info().Msg("doing to testing")
 
+	// Running the tests.
+	code := m.Run()
+
+	// Removing container.
+	teardown(img, pool, resource)
+
+	os.Exit(code)
+}
+
+// nolint:paralleltest
+func TestPrepare(t *testing.T) {
 	if err := client.
 		Cmd("sudo schnutibox prepare --read-only").
 		SetStdio(os.Stdout, os.Stderr).
 		Run(); err != nil {
 		log.Error().Err(err).Msg("could not run command")
+		t.Fatal()
+	}
+}
+
+// nolint:paralleltest
+func TestBoxService(t *testing.T) {
+	if err := client.
+		Cmd("file /etc/systemd/system/schnutibox.service").
+		SetStdio(os.Stdout, os.Stderr).
+		Run(); err != nil {
+		log.Error().Err(err).Msg("could not find schnutibox service file")
+		t.Fatal()
+	}
+}
+
+// nolint:paralleltest
+func TestUdevRules(t *testing.T) {
+	if err := client.
+		Cmd("file /etc/udev/rules.d/50-neuftech.rules").
+		SetStdio(os.Stdout, os.Stderr).
+		Run(); err != nil {
+		log.Error().Err(err).Msg("could not find udev rules file")
 		t.Fatal()
 	}
 }

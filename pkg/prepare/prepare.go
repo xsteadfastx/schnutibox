@@ -3,7 +3,6 @@ package prepare
 
 //nolint:golint
 import (
-	_ "embed"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -15,6 +14,7 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
+	"go.xsfx.dev/schnutibox/assets"
 )
 
 const (
@@ -30,30 +30,17 @@ const (
 	upmpdcliGroup      = "nogroup"
 )
 
-//go:embed assets/files/schnutibox.service
-var serviceFile []byte
-
-//go:embed assets/templates/fstab.raspbian.tmpl
-var fstabRaspbianTemplate string
-
-//go:embed assets/templates/mopidy.conf.tmpl
-var mopidyConf string
-
-//go:embed assets/files/upmpdcli.conf
-var upmpdcliConf []byte
-
-//go:embed assets/files/ntp.service
-var ntpService []byte
-
 // Config.
 var Cfg = struct {
+	RFIDReader          string
 	ReadOnly            bool
-	System              string
 	Spotify             bool
-	SpotifyUsername     string
-	SpotifyPassword     string
 	SpotifyClientID     string
 	SpotifyClientSecret string
+	SpotifyPassword     string
+	SpotifyUsername     string
+	StopID              string
+	System              string
 }{}
 
 // BoxService creates a systemd service for schnutibox.
@@ -70,7 +57,7 @@ func BoxService(filename string, enable bool) error {
 	}
 
 	//nolint:gosec
-	if err := ioutil.WriteFile(filename, serviceFile, 0o644); err != nil {
+	if err := ioutil.WriteFile(filename, assets.SchnutiboxService, 0o644); err != nil {
 		return fmt.Errorf("could not write service file: %w", err)
 	}
 
@@ -106,7 +93,7 @@ func NTP() error {
 		return fmt.Errorf("could not install ntp: %w", err)
 	}
 
-	if err := ioutil.WriteFile("/etc/systemd/system/ntp.service", ntpService, 0o644); err != nil {
+	if err := ioutil.WriteFile("/etc/systemd/system/ntp.service", assets.NtpService, 0o644); err != nil {
 		return fmt.Errorf("could not copy ntp service file: %w", err)
 	}
 
@@ -169,7 +156,7 @@ func Fstab(system string) error {
 
 	// Chose the right template.
 	// In future it should be a switch statement.
-	tmpl := fstabRaspbianTemplate
+	tmpl := assets.FstabRaspbianTemplate
 
 	// Parse template.
 	t := template.Must(template.New("fstab").Parse(tmpl))
@@ -236,6 +223,32 @@ func RemovePkgs(system string) error {
 
 	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("could not do an autoremove: %w", err)
+	}
+
+	return nil
+}
+
+func CreateUDEVrules() error {
+	logger := log.With().Str("stage", "CreateUDEVrules").Logger()
+	logger.Info().Msg("writing udev rule file")
+
+	// Parse template.
+	t := template.Must(template.New("udev").Parse(assets.UDEVRules))
+
+	// Open file.
+	f, err := os.Create("/etc/udev/rules.d/50-neuftech.rules")
+	if err != nil {
+		return fmt.Errorf("could not create file to write: %w", err)
+	}
+	defer f.Close()
+
+	// Create and write.
+	if err := t.Execute(f, struct {
+		SchnutiboxGroup string
+	}{
+		schnutiboxUser,
+	}); err != nil {
+		return fmt.Errorf("could not write templated udev rules: %w", err)
 	}
 
 	return nil
@@ -432,7 +445,7 @@ func Mopidy() error {
 		Cfg.Spotify = true
 	}
 
-	t := template.Must(template.New("mopidyConf").Parse(mopidyConf))
+	t := template.Must(template.New("mopidyConf").Parse(assets.MopidyConf))
 
 	f, err := os.Create("/etc/mopidy/mopidy.conf")
 	if err != nil {
@@ -519,8 +532,30 @@ func Upmpdcli() error {
 	}
 
 	// Create config.
-	if err := ioutil.WriteFile("/etc/upmpdcli.conf", upmpdcliConf, 0o644); err != nil {
+	if err := ioutil.WriteFile("/etc/upmpdcli.conf", assets.UpmpdcliConf, 0o644); err != nil {
 		return fmt.Errorf("could not copy upmpdcli config: %w", err)
+	}
+
+	return nil
+}
+
+func SchnutiboxConfig() error {
+	logger := log.With().Str("stage", "Upmpdcli").Logger()
+	logger.Info().Msg("writing schnutibox config")
+
+	// Parse template.
+	t := template.Must(template.New("config").Parse(assets.SchnutiboxConfig))
+
+	// Open file.
+	f, err := os.Create("/etc/schnutibox/schnutibox.yml")
+	if err != nil {
+		return fmt.Errorf("could not create file to write: %w", err)
+	}
+	defer f.Close()
+
+	// Create and write.
+	if err := t.Execute(f, Cfg); err != nil {
+		return fmt.Errorf("could not write templated udev rules: %w", err)
 	}
 
 	return nil
@@ -529,9 +564,19 @@ func Upmpdcli() error {
 func Run(cmd *cobra.Command, args []string) {
 	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 
-	// Running the preparation.
+	// Install schnutibox service.
 	if err := BoxService(serviceLocation+"/"+serviceFileName, true); err != nil {
 		log.Fatal().Err(err).Msg("could not create schnutibox service")
+	}
+
+	// Create schnutibox config.
+	if err := SchnutiboxConfig(); err != nil {
+		log.Fatal().Err(err).Msg("could not create schnutibox config.")
+	}
+
+	// Install udev file.
+	if err := CreateUDEVrules(); err != nil {
+		log.Fatal().Err(err).Msg("could not install udev rules")
 	}
 
 	// Setup NTP.

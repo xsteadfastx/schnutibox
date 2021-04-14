@@ -44,6 +44,8 @@ func init() {
 	prepareCmd.Flags().StringVar(&prepare.Cfg.SpotifyPassword, "spotify-password", "", "Spotify password")
 	prepareCmd.Flags().StringVar(&prepare.Cfg.SpotifyClientID, "spotify-client-id", "", "Spotify client ID")
 	prepareCmd.Flags().StringVar(&prepare.Cfg.SpotifyClientSecret, "spotify-client-secret", "", "Spotify client secret")
+	prepareCmd.Flags().StringVar(&prepare.Cfg.RFIDReader, "rfid-reader", "/dev/hidraw0", "dev path of rfid reader")
+	prepareCmd.Flags().StringVar(&prepare.Cfg.StopID, "stop-id", "", "ID of stop tag")
 
 	// Version.
 	rootCmd.AddCommand(versionCmd)
@@ -64,6 +66,9 @@ func initConfig() {
 	viper.SetEnvPrefix("SCHNUTIBOX")
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	viper.AutomaticEnv()
+
+	// Flags.
+	viper.BindPFlag("reader.dev", prepareCmd.Flags().Lookup("rfid-reader"))
 
 	// Parse config file.
 	if cfgFile != "" {

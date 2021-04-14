@@ -10,6 +10,7 @@ require (
 	github.com/google/go-cmp v0.5.5 // indirect
 	github.com/helloyi/go-sshclient v1.0.0
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51 // indirect
+	github.com/manifoldco/promptui v0.8.0
 	github.com/moby/term v0.0.0-20201216013528-df9cb8a40635 // indirect
 	github.com/ory/dockertest/v3 v3.6.3
 	github.com/prometheus/client_golang v0.9.3

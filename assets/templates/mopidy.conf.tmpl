@@ -5,16 +5,19 @@ config_dir = /etc/mopidy/
 [audio]
 output = alsasink
 mixer = alsamixer
+mixer_volume = 100
 
 [alsamixer]
 card = 0
 control= Headphone
+
 
 [mpd]
 hostname = 0.0.0.0
 
 {{if .Spotify}}
 [spotify]
+enabled = true
 username = {{.SpotifyUsername}}
 password = {{.SpotifyPassword}}
 client_id = {{.SpotifyClientID}}
