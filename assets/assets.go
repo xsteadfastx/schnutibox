@@ -1,7 +1,9 @@
-//nolint:gochecknoglobals
+//nolint:gochecknoglobals,golint,stylecheck,godox
 package assets
 
 import _ "embed"
+
+// TODO: Using embed.FS
 
 //go:embed templates/schnutibox.yml.tmpl
 var SchnutiboxConfig string

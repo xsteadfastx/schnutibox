@@ -68,7 +68,9 @@ func initConfig() {
 	viper.AutomaticEnv()
 
 	// Flags.
-	viper.BindPFlag("reader.dev", prepareCmd.Flags().Lookup("rfid-reader"))
+	if err := viper.BindPFlag("reader.dev", prepareCmd.Flags().Lookup("rfid-reader")); err != nil {
+		logger.Fatal().Err(err).Msg("could not bind flag")
+	}
 
 	// Parse config file.
 	if cfgFile != "" {

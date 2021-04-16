@@ -1,7 +1,6 @@
 //nolint:exhaustivestruct,gochecknoglobals
 package prepare
 
-//nolint:golint
 import (
 	"fmt"
 	"io/ioutil"
@@ -30,7 +29,6 @@ const (
 	upmpdcliGroup      = "nogroup"
 )
 
-// Config.
 var Cfg = struct {
 	RFIDReader          string
 	ReadOnly            bool
@@ -93,6 +91,7 @@ func NTP() error {
 		return fmt.Errorf("could not install ntp: %w", err)
 	}
 
+	// nolint:gosec
 	if err := ioutil.WriteFile("/etc/systemd/system/ntp.service", assets.NtpService, 0o644); err != nil {
 		return fmt.Errorf("could not copy ntp service file: %w", err)
 	}
@@ -305,7 +304,7 @@ func CreateSymlinks(system string) error {
 		logger.Debug().Str("item", i).Msg("remove file/directory")
 
 		if err := os.RemoveAll(i); err != nil {
-			return err
+			return fmt.Errorf("could not remove: %w", err)
 		}
 	}
 
@@ -330,7 +329,7 @@ func CreateSymlinks(system string) error {
 }
 
 // cmdlineTxt modifies the /boot/cmdline.txt.
-func cmdlineTxt(system string) error {
+func cmdlineTxt() error {
 	// Read.
 	oldLine, err := ioutil.ReadFile("/boot/cmdline.txt")
 	if err != nil {
@@ -340,6 +339,7 @@ func cmdlineTxt(system string) error {
 	newLine := strings.TrimSuffix(string(oldLine), "\n") + " " + "fastboot" + " " + "noswap"
 
 	// Write.
+	// nolint:gosec
 	if err := ioutil.WriteFile("/boot/cmdline.txt", []byte(newLine), 0o644); err != nil {
 		return fmt.Errorf("could not write cmdline.txt: %w", err)
 	}
@@ -361,7 +361,7 @@ func makeReadOnly(system string) error {
 		return fmt.Errorf("could not create fstab: %w", err)
 	}
 
-	if err := cmdlineTxt(system); err != nil {
+	if err := cmdlineTxt(); err != nil {
 		return fmt.Errorf("could not modify cmdline.txt: %w", err)
 	}
 
@@ -369,7 +369,7 @@ func makeReadOnly(system string) error {
 }
 
 // Mopidy setups mopidy.
-//nolint:funlen
+//nolint:funlen,cyclop
 func Mopidy() error {
 	logger := log.With().Str("stage", "Mopidy").Logger()
 
@@ -416,6 +416,7 @@ func Mopidy() error {
 		"mopidy-alsamixer",
 		"mopidy-mpd",
 		"mopidy-spotify",
+		"python3-pip",
 	)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -424,6 +425,21 @@ func Mopidy() error {
 
 	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("could not install mopidy: %w", err)
+	}
+
+	// Extensions.
+	cmd = exec.Command(
+		"pip3", "install", "--upgrade",
+		"Mopidy-YouTube",
+		"requests>=2.22",
+	)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	logger.Debug().Str("cmd", cmd.String()).Msg("running")
+
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("could not install extensions: %w", err)
 	}
 
 	// Enable service.
@@ -532,6 +548,7 @@ func Upmpdcli() error {
 	}
 
 	// Create config.
+	// nolint:gosec
 	if err := ioutil.WriteFile("/etc/upmpdcli.conf", assets.UpmpdcliConf, 0o644); err != nil {
 		return fmt.Errorf("could not copy upmpdcli config: %w", err)
 	}

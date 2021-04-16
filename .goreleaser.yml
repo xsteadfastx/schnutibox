@@ -34,3 +34,8 @@ changelog:
     exclude:
       - "^docs:"
       - "^test:"
+
+release:
+  github:
+    owner: xsteadfastx
+    name: schnutibox
