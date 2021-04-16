@@ -12,11 +12,15 @@ steps:
     image: golangci/golangci-lint:latest
     commands:
       - make lint
+    depends_on:
+      - tags
 
   - name: test
     image: golang:latest
     commands:
       - make test
+    depends_on:
+      - tags
 
   - name: build
     image: goreleaser/goreleaser:v0.162.0
@@ -24,6 +28,7 @@ steps:
       - (cd /tmp; go get -u github.com/go-bindata/go-bindata/...)
       - make build
     depends_on:
+      - tags
       - lint
       - test
     when:
@@ -39,6 +44,7 @@ steps:
     commands:
       - goreleaser release --rm-dist
     depends_on:
+      - tags
       - lint
       - test
     when:

@@ -1,2 +1,3 @@
 config.y*
 dist/
+.envrc

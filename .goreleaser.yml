@@ -34,6 +34,8 @@ changelog:
     exclude:
       - "^docs:"
       - "^test:"
+      - "^ci:"
+      - "happy linting"
 
 release:
   github:
