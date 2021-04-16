@@ -12,7 +12,7 @@ generate:
 
 .PHONY: lint
 lint:
-	golangci-lint run --enable-all --disable=exhaustivestruct
+	golangci-lint run --timeout 10m --enable-all --disable=exhaustivestruct
 
 .PHONY: test
 test:
