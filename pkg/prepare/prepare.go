@@ -54,8 +54,13 @@ func BoxService(filename string, enable bool) error {
 		return fmt.Errorf("could not create config dir: %w", err)
 	}
 
+	schnutiboxService, err := assets.Assets.ReadFile("files/schnutibox.service")
+	if err != nil {
+		return fmt.Errorf("could not get service file: %w", err)
+	}
+
 	//nolint:gosec
-	if err := ioutil.WriteFile(filename, assets.SchnutiboxService, 0o644); err != nil {
+	if err := ioutil.WriteFile(filename, schnutiboxService, 0o644); err != nil {
 		return fmt.Errorf("could not write service file: %w", err)
 	}
 
@@ -91,8 +96,13 @@ func NTP() error {
 		return fmt.Errorf("could not install ntp: %w", err)
 	}
 
+	ntpService, err := assets.Assets.ReadFile("files/ntp.service")
+	if err != nil {
+		return fmt.Errorf("could not get ntp service file: %w", err)
+	}
+
 	// nolint:gosec
-	if err := ioutil.WriteFile("/etc/systemd/system/ntp.service", assets.NtpService, 0o644); err != nil {
+	if err := ioutil.WriteFile("/etc/systemd/system/ntp.service", ntpService, 0o644); err != nil {
 		return fmt.Errorf("could not copy ntp service file: %w", err)
 	}
 
@@ -155,10 +165,13 @@ func Fstab(system string) error {
 
 	// Chose the right template.
 	// In future it should be a switch statement.
-	tmpl := assets.FstabRaspbianTemplate
+	tmpl, err := assets.Assets.ReadFile("templates/fstab.raspbian.tmpl")
+	if err != nil {
+		return fmt.Errorf("could not get fstab template: %w", err)
+	}
 
 	// Parse template.
-	t := template.Must(template.New("fstab").Parse(tmpl))
+	t := template.Must(template.New("fstab").Parse(string(tmpl)))
 
 	// Open fstab.
 	f, err := os.Create("/etc/fstab")
@@ -232,7 +245,12 @@ func CreateUDEVrules() error {
 	logger.Info().Msg("writing udev rule file")
 
 	// Parse template.
-	t := template.Must(template.New("udev").Parse(assets.UDEVRules))
+	tmpl, err := assets.Assets.ReadFile("templates/50-neuftech.rules.tmpl")
+	if err != nil {
+		return fmt.Errorf("could not get udev rules file: %w", err)
+	}
+
+	t := template.Must(template.New("udev").Parse(string(tmpl)))
 
 	// Open file.
 	f, err := os.Create("/etc/udev/rules.d/50-neuftech.rules")
@@ -461,7 +479,12 @@ func Mopidy() error {
 		Cfg.Spotify = true
 	}
 
-	t := template.Must(template.New("mopidyConf").Parse(assets.MopidyConf))
+	tmpl, err := assets.Assets.ReadFile("templates/mopidy.conf.tmpl")
+	if err != nil {
+		return fmt.Errorf("could not get mopidy.conf: %w", err)
+	}
+
+	t := template.Must(template.New("mopidyConf").Parse(string(tmpl)))
 
 	f, err := os.Create("/etc/mopidy/mopidy.conf")
 	if err != nil {
@@ -548,8 +571,13 @@ func Upmpdcli() error {
 	}
 
 	// Create config.
+	upmpdcliConf, err := assets.Assets.ReadFile("files/upmpdcli.conf")
+	if err != nil {
+		return fmt.Errorf("could not get upmpdcli.conf: %w", err)
+	}
+
 	// nolint:gosec
-	if err := ioutil.WriteFile("/etc/upmpdcli.conf", assets.UpmpdcliConf, 0o644); err != nil {
+	if err := ioutil.WriteFile("/etc/upmpdcli.conf", upmpdcliConf, 0o644); err != nil {
 		return fmt.Errorf("could not copy upmpdcli config: %w", err)
 	}
 
@@ -561,7 +589,12 @@ func SchnutiboxConfig() error {
 	logger.Info().Msg("writing schnutibox config")
 
 	// Parse template.
-	t := template.Must(template.New("config").Parse(assets.SchnutiboxConfig))
+	tmpl, err := assets.Assets.ReadFile("templates/schnutibox.yml.tmpl")
+	if err != nil {
+		return fmt.Errorf("could not get template: %w", err)
+	}
+
+	t := template.Must(template.New("config").Parse(string(tmpl)))
 
 	// Open file.
 	f, err := os.Create("/etc/schnutibox/schnutibox.yml")
