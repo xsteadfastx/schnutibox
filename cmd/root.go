@@ -75,7 +75,7 @@ func initConfig() {
 	// Parse config file.
 	if cfgFile != "" {
 		viper.SetConfigFile(cfgFile)
-		parseConfig(logger)
+		parseConfig(logger, true)
 	} else {
 		logger.Fatal().Msg("missing config file")
 	}
@@ -83,21 +83,41 @@ func initConfig() {
 	viper.WatchConfig()
 	viper.OnConfigChange(func(e fsnotify.Event) {
 		logger.Info().Msg("config file changed")
-		parseConfig(logger)
+		parseConfig(logger, false)
 	})
 }
 
-func parseConfig(logger zerolog.Logger) {
+// parseConfig parses the config and does some tests if required fields are there.
+// Its also possible to decide if parsing should end up in a fatal or just an error.
+func parseConfig(logger zerolog.Logger, fatal bool) {
 	if err := viper.ReadInConfig(); err != nil {
-		logger.Fatal().Err(err).Msg("error loading config file")
+		if fatal {
+			logger.Fatal().Err(err).Msg("error loading config file")
+		}
+
+		logger.Error().Err(err).Msg("error loading config file")
+
+		return
 	}
 
 	if err := viper.Unmarshal(&config.Cfg); err != nil {
-		logger.Fatal().Err(err).Msg("could not unmarshal config")
+		if fatal {
+			logger.Fatal().Err(err).Msg("could not unmarshal config")
+		}
+
+		logger.Error().Err(err).Msg("could not unmarshal config")
+
+		return
 	}
 
 	if err := config.Cfg.Require(); err != nil {
-		logger.Fatal().Err(err).Msg("missing config parts")
+		if fatal {
+			logger.Fatal().Err(err).Msg("missing config parts")
+		}
+
+		logger.Error().Err(err).Msg("missing config parts")
+
+		return
 	}
 }
 
