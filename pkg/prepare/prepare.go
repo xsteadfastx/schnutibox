@@ -27,6 +27,10 @@ const (
 	schnutboxConfigDir = "/etc/schnutibox"
 	upmpdcliUser       = "upmpdcli"
 	upmpdcliGroup      = "nogroup"
+	snapserverUser     = "snapserver"
+	snapserverGroup    = "snapserver"
+	snapclientUser     = "snapclient"
+	snapclientGroup    = "snapclient"
 )
 
 var Cfg = struct {
@@ -41,11 +45,11 @@ var Cfg = struct {
 	System              string
 }{}
 
-// BoxService creates a systemd service for schnutibox.
-func BoxService(filename string, enable bool) error {
+// boxService creates a systemd service for schnutibox.
+func boxService(filename string, enable bool) error {
 	logger := log.With().Str("stage", "BoxService").Logger()
 
-	if err := CreateUser(); err != nil {
+	if err := createUser(); err != nil {
 		return fmt.Errorf("could not create user: %w", err)
 	}
 
@@ -83,7 +87,7 @@ func BoxService(filename string, enable bool) error {
 	return nil
 }
 
-func NTP() error {
+func ntp() error {
 	logger := log.With().Str("stage", "NTP").Logger()
 
 	cmd := exec.Command("apt-get", "install", "-y", "ntp", "ntpdate")
@@ -119,9 +123,9 @@ func NTP() error {
 	return nil
 }
 
-// Fstab creates a fstab for a read-only system.
+// fstab creates a fstab for a read-only system.
 // nolint:funlen
-func Fstab(system string) error {
+func fstab(system string) error {
 	logger := log.With().Str("stage", "Fstab").Logger()
 
 	// Getting timesync user and group informations.
@@ -163,6 +167,31 @@ func Fstab(system string) error {
 
 	logger.Debug().Str("uid", upmpdcliUser.Uid).Str("gid", upmpdcliGroup.Gid).Msg("upmpdcli")
 
+	// Getting snapserver user and group informations.
+	snapserverUser, err := user.Lookup(snapserverUser)
+	if err != nil {
+		return fmt.Errorf("could not lookup snapserver user: %w", err)
+	}
+
+	snapserverGroup, err := user.LookupGroup(snapserverGroup)
+	if err != nil {
+		return fmt.Errorf("could not lookup snapserver group: %w", err)
+	}
+
+	logger.Debug().Str("uid", snapserverUser.Uid).Str("gid", snapserverGroup.Gid).Msg("snapserver")
+
+	snapclientUser, err := user.Lookup(snapclientUser)
+	if err != nil {
+		return fmt.Errorf("could not lookup snapclient user: %w", err)
+	}
+
+	snapclientGroup, err := user.LookupGroup(snapclientGroup)
+	if err != nil {
+		return fmt.Errorf("could not lookup snapclient group: %w", err)
+	}
+
+	logger.Debug().Str("uid", snapclientUser.Uid).Str("gid", snapclientGroup.Gid).Msg("snapclient")
+
 	// Chose the right template.
 	// In future it should be a switch statement.
 	tmpl, err := assets.Assets.ReadFile("templates/fstab.raspbian.tmpl")
@@ -182,12 +211,16 @@ func Fstab(system string) error {
 
 	// Create and write.
 	if err := t.Execute(f, struct {
-		TimesyncUID string
-		TimesyncGID string
-		MopidyUID   string
-		MopidyGID   string
-		UpmpdcliUID string
-		UpmpdcliGID string
+		TimesyncUID   string
+		TimesyncGID   string
+		MopidyUID     string
+		MopidyGID     string
+		UpmpdcliUID   string
+		UpmpdcliGID   string
+		SnapserverUID string
+		SnapserverGID string
+		SnapclientUID string
+		SnapclientGID string
 	}{
 		timesyncUser.Uid,
 		timesyncGroup.Gid,
@@ -195,6 +228,10 @@ func Fstab(system string) error {
 		mopidyGroup.Gid,
 		upmpdcliUser.Uid,
 		upmpdcliGroup.Gid,
+		snapserverUser.Uid,
+		snapserverGroup.Gid,
+		snapclientUser.Uid,
+		snapclientGroup.Gid,
 	}); err != nil {
 		return fmt.Errorf("could not write templated fstab: %w", err)
 	}
@@ -202,8 +239,8 @@ func Fstab(system string) error {
 	return nil
 }
 
-// RemovePkgs removes not needed software in read-only mode.
-func RemovePkgs(system string) error {
+// removePkgs removes not needed software in read-only mode.
+func removePkgs(system string) error {
 	logger := log.With().Str("stage", "RemovePkgs").Logger()
 	if system != "raspbian" {
 		logger.Info().Msg("nothing to do")
@@ -240,7 +277,7 @@ func RemovePkgs(system string) error {
 	return nil
 }
 
-func CreateUDEVrules() error {
+func udevRules() error {
 	logger := log.With().Str("stage", "CreateUDEVrules").Logger()
 	logger.Info().Msg("writing udev rule file")
 
@@ -271,8 +308,8 @@ func CreateUDEVrules() error {
 	return nil
 }
 
-// CreateUser creates schnutibox system user and group.
-func CreateUser() error {
+// createUser creates schnutibox system user and group.
+func createUser() error {
 	logger := log.With().Str("stage", "CreateUser").Logger()
 
 	cmd := exec.Command("adduser", "--system", "--group", "--no-create-home", schnutiboxUser)
@@ -285,8 +322,8 @@ func CreateUser() error {
 	return nil
 }
 
-// CreateSymlinks creates all needed symlinks.
-func CreateSymlinks(system string) error {
+// symlinks creates all needed symlinks.
+func symlinks(system string) error {
 	logger := log.With().Str("stage", "Symlinks").Logger()
 
 	links := []struct {
@@ -365,17 +402,17 @@ func cmdlineTxt() error {
 	return nil
 }
 
-// makeReadOnly executes stuff if a read-only system is wanted.
-func makeReadOnly(system string) error {
-	if err := RemovePkgs(system); err != nil {
+// readOnly executes stuff if a read-only system is wanted.
+func readOnly(system string) error {
+	if err := removePkgs(system); err != nil {
 		return fmt.Errorf("could not remove pkgs: %w", err)
 	}
 
-	if err := CreateSymlinks(system); err != nil {
+	if err := symlinks(system); err != nil {
 		return fmt.Errorf("could not create symlinks: %w", err)
 	}
 
-	if err := Fstab(system); err != nil {
+	if err := fstab(system); err != nil {
 		return fmt.Errorf("could not create fstab: %w", err)
 	}
 
@@ -386,9 +423,9 @@ func makeReadOnly(system string) error {
 	return nil
 }
 
-// Mopidy setups mopidy.
+// mopidy setups mopidy.
 //nolint:funlen,cyclop
-func Mopidy() error {
+func mopidy() error {
 	logger := log.With().Str("stage", "Mopidy").Logger()
 
 	// GPG Key.
@@ -501,7 +538,7 @@ func Mopidy() error {
 
 // Upmpdcli setups upmpdcli.
 //nolint:funlen
-func Upmpdcli() error {
+func upmpdcli() error {
 	logger := log.With().Str("stage", "Upmpdcli").Logger()
 
 	// GPG Key.
@@ -584,8 +621,73 @@ func Upmpdcli() error {
 	return nil
 }
 
-func SchnutiboxConfig() error {
-	logger := log.With().Str("stage", "Upmpdcli").Logger()
+// nolint:funlen
+func snapcast() error {
+	logger := log.With().Str("stage", "snapcast").Logger()
+
+	// Download deb.
+	cmd := exec.Command(
+		"wget",
+		"https://github.com/badaix/snapcast/releases/download/v0.24.0/snapclient_0.24.0-1_without-pulse_armhf.deb",
+		"-O", "/tmp/snapclient.deb",
+	)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	logger.Debug().Str("cmd", cmd.String()).Msg("running")
+
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("could not download snapclient deb: %w", err)
+	}
+
+	// Install deb
+	cmd = exec.Command(
+		"/bin/sh", "-c",
+		"dpkg -i /tmp/snapclient.deb; apt --fix-broken install -y; rm /tmp/snapclient.deb",
+	)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	logger.Debug().Str("cmd", cmd.String()).Msg("running")
+
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("could not install snapclient deb: %w", err)
+	}
+
+	// Download deb.
+	cmd = exec.Command(
+		"wget",
+		"https://github.com/badaix/snapcast/releases/download/v0.24.0/snapserver_0.24.0-1_armhf.deb",
+		"-O", "/tmp/snapserver.deb",
+	)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	logger.Debug().Str("cmd", cmd.String()).Msg("running")
+
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("could not download snapserver deb: %w", err)
+	}
+
+	// Install deb
+	cmd = exec.Command(
+		"/bin/sh", "-c",
+		"dpkg -i /tmp/snapserver.deb; apt --fix-broken install -y; rm /tmp/snapserver.deb",
+	)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	logger.Debug().Str("cmd", cmd.String()).Msg("running")
+
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("could not install snapserver deb: %w", err)
+	}
+
+	return nil
+}
+
+func schnutiboxConfig() error {
+	logger := log.With().Str("stage", "schnutiboxConfig").Logger()
 	logger.Info().Msg("writing schnutibox config")
 
 	// Parse template.
@@ -615,38 +717,43 @@ func Run(cmd *cobra.Command, args []string) {
 	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 
 	// Install schnutibox service.
-	if err := BoxService(serviceLocation+"/"+serviceFileName, true); err != nil {
+	if err := boxService(serviceLocation+"/"+serviceFileName, true); err != nil {
 		log.Fatal().Err(err).Msg("could not create schnutibox service")
 	}
 
 	// Create schnutibox config.
-	if err := SchnutiboxConfig(); err != nil {
+	if err := schnutiboxConfig(); err != nil {
 		log.Fatal().Err(err).Msg("could not create schnutibox config.")
 	}
 
 	// Install udev file.
-	if err := CreateUDEVrules(); err != nil {
+	if err := udevRules(); err != nil {
 		log.Fatal().Err(err).Msg("could not install udev rules")
 	}
 
 	// Setup NTP.
-	if err := NTP(); err != nil {
+	if err := ntp(); err != nil {
 		log.Fatal().Err(err).Msg("could not setup ntp")
 	}
 
 	// Setup mopidy.
-	if err := Mopidy(); err != nil {
+	if err := mopidy(); err != nil {
 		log.Fatal().Err(err).Msg("could not setup mopidy")
 	}
 
 	// Setup upmpdcli.
-	if err := Upmpdcli(); err != nil {
+	if err := upmpdcli(); err != nil {
 		log.Fatal().Err(err).Msg("could not setup upmpdcli")
+	}
+
+	// Setup snapcast.
+	if err := snapcast(); err != nil {
+		log.Fatal().Err(err).Msg("could not setup snapclient")
 	}
 
 	// Making system read-only.
 	if Cfg.ReadOnly {
-		if err := makeReadOnly(Cfg.System); err != nil {
+		if err := readOnly(Cfg.System); err != nil {
 			log.Fatal().Err(err).Msg("could not make system read-only")
 		}
 	}

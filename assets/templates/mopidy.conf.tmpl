@@ -3,14 +3,13 @@ cache_dir = /var/cache/mopidy
 config_dir = /etc/mopidy/
 
 [audio]
-output = alsasink
+output = audioresample ! audioconvert ! audio/x-raw,rate=48000,channels=2,format=S16LE ! filesink location=/tmp/snapfifo
 mixer = alsamixer
 mixer_volume = 100
 
 [alsamixer]
 card = 0
 control= Headphone
-
 
 [mpd]
 hostname = 0.0.0.0
