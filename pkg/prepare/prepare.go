@@ -124,9 +124,10 @@ func ntp() error {
 }
 
 // fstab creates a fstab for a read-only system.
-// nolint:funlen
+// nolint:funlen,cyclop
 func fstab(system string) error {
 	logger := log.With().Str("stage", "Fstab").Logger()
+	logger.Debug().Str("system", system).Msg("ignoring for now")
 
 	// Getting timesync user and group informations.
 	timesyncUser, err := user.Lookup(timesyncUser)
@@ -325,6 +326,7 @@ func createUser() error {
 // symlinks creates all needed symlinks.
 func symlinks(system string) error {
 	logger := log.With().Str("stage", "Symlinks").Logger()
+	logger.Debug().Str("system", system).Msg("ignoring for now")
 
 	links := []struct {
 		symlink string
