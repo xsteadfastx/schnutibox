@@ -1,4 +1,4 @@
-//nolint:gochecknoglobals
+//nolint:gochecknoglobals,golint,stylecheck
 package prepare
 
 import "embed"

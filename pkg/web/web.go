@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"html/template"
 	"net/http"
-	"time"
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rs/zerolog/log"
@@ -26,7 +25,12 @@ func root(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	t.Execute(w, struct{}{})
+	if err := t.Execute(w, struct{}{}); err != nil {
+		logger.Error().Err(err).Msg("could not execute template")
+		http.Error(w, "could not execute template", http.StatusInternalServerError)
+
+		return
+	}
 }
 
 func Run(command *cobra.Command, args []string) {
@@ -43,15 +47,6 @@ func Run(command *cobra.Command, args []string) {
 		),
 	)
 	http.Handle("/metrics", promhttp.Handler())
-
-	go func() {
-		ticker := time.NewTicker(5 * time.Second)
-
-		for {
-			<-ticker.C
-			log.Debug().Msg("ping")
-		}
-	}()
 
 	// Serving this thing.
 	log.Info().Msgf("serving on %s...", l)
