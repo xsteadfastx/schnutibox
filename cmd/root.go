@@ -49,10 +49,19 @@ func init() {
 
 	// Version.
 	rootCmd.AddCommand(versionCmd)
+
+	// Web.
+	rootCmd.AddCommand(webCmd)
+	webCmd.Flags().StringVarP(&cfgFile, "config", "c", "", "config file")
+
+	if err := webCmd.MarkFlagRequired("config"); err != nil {
+		log.Fatal().Err(err).Msg("missing flag")
+	}
 }
 
 // initConfig loads the config file.
-func initConfig() {
+// fatal defines if config parsing should end in a fatal error or not.
+func initConfig(fatal bool) {
 	logger := log.With().Str("config", cfgFile).Logger()
 
 	// Defaults.
@@ -75,7 +84,7 @@ func initConfig() {
 	// Parse config file.
 	if cfgFile != "" {
 		viper.SetConfigFile(cfgFile)
-		parseConfig(logger, true)
+		parseConfig(logger, fatal)
 	} else {
 		logger.Fatal().Msg("missing config file")
 	}

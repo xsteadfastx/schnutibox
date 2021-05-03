@@ -3,16 +3,15 @@ package run
 
 import (
 	"fmt"
-	"net/http"
 
 	"github.com/fhs/gompd/v2/mpd"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 	"go.xsfx.dev/schnutibox/internal/config"
 	"go.xsfx.dev/schnutibox/internal/metrics"
 	"go.xsfx.dev/schnutibox/pkg/rfid"
+	"go.xsfx.dev/schnutibox/pkg/web"
 )
 
 type mpc struct {
@@ -71,7 +70,6 @@ func (m *mpc) play(logger zerolog.Logger, rfid string, name string, uris []strin
 	return m.conn.Play(-1)
 }
 
-//nolint:funlen
 func Run(cmd *cobra.Command, args []string) {
 	log.Info().Msg("starting the RFID reader")
 
@@ -131,13 +129,6 @@ func Run(cmd *cobra.Command, args []string) {
 		}
 	}()
 
-	l := fmt.Sprintf("%s:%d", config.Cfg.Box.Hostname, config.Cfg.Box.Port)
-
-	http.Handle("/metrics", promhttp.Handler())
-
-	log.Info().Msgf("serving on %s...", l)
-
-	if err := http.ListenAndServe(l, nil); err != nil {
-		log.Fatal().Err(err).Msg("")
-	}
+	// Running web interface. Blocking.
+	web.Run(cmd, args)
 }

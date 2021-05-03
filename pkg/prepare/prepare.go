@@ -13,7 +13,7 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
-	"go.xsfx.dev/schnutibox/assets"
+	assets "go.xsfx.dev/schnutibox/assets/prepare"
 )
 
 const (
@@ -58,7 +58,7 @@ func boxService(filename string, enable bool) error {
 		return fmt.Errorf("could not create config dir: %w", err)
 	}
 
-	schnutiboxService, err := assets.Assets.ReadFile("files/schnutibox.service")
+	schnutiboxService, err := assets.Files.ReadFile("files/prepare/schnutibox.service")
 	if err != nil {
 		return fmt.Errorf("could not get service file: %w", err)
 	}
@@ -100,7 +100,7 @@ func ntp() error {
 		return fmt.Errorf("could not install ntp: %w", err)
 	}
 
-	ntpService, err := assets.Assets.ReadFile("files/ntp.service")
+	ntpService, err := assets.Files.ReadFile("files/prepare/ntp.service")
 	if err != nil {
 		return fmt.Errorf("could not get ntp service file: %w", err)
 	}
@@ -195,7 +195,7 @@ func fstab(system string) error {
 
 	// Chose the right template.
 	// In future it should be a switch statement.
-	tmpl, err := assets.Assets.ReadFile("templates/fstab.raspbian.tmpl")
+	tmpl, err := assets.Templates.ReadFile("templates/prepare/fstab.raspbian.tmpl")
 	if err != nil {
 		return fmt.Errorf("could not get fstab template: %w", err)
 	}
@@ -283,7 +283,7 @@ func udevRules() error {
 	logger.Info().Msg("writing udev rule file")
 
 	// Parse template.
-	tmpl, err := assets.Assets.ReadFile("templates/50-neuftech.rules.tmpl")
+	tmpl, err := assets.Templates.ReadFile("templates/prepare/50-neuftech.rules.tmpl")
 	if err != nil {
 		return fmt.Errorf("could not get udev rules file: %w", err)
 	}
@@ -518,7 +518,7 @@ func mopidy() error {
 		Cfg.Spotify = true
 	}
 
-	tmpl, err := assets.Assets.ReadFile("templates/mopidy.conf.tmpl")
+	tmpl, err := assets.Templates.ReadFile("templates/prepare/mopidy.conf.tmpl")
 	if err != nil {
 		return fmt.Errorf("could not get mopidy.conf: %w", err)
 	}
@@ -610,7 +610,7 @@ func upmpdcli() error {
 	}
 
 	// Create config.
-	upmpdcliConf, err := assets.Assets.ReadFile("files/upmpdcli.conf")
+	upmpdcliConf, err := assets.Files.ReadFile("files/prepare/upmpdcli.conf")
 	if err != nil {
 		return fmt.Errorf("could not get upmpdcli.conf: %w", err)
 	}
@@ -693,7 +693,7 @@ func schnutiboxConfig() error {
 	logger.Info().Msg("writing schnutibox config")
 
 	// Parse template.
-	tmpl, err := assets.Assets.ReadFile("templates/schnutibox.yml.tmpl")
+	tmpl, err := assets.Templates.ReadFile("templates/prepare/schnutibox.yml.tmpl")
 	if err != nil {
 		return fmt.Errorf("could not get template: %w", err)
 	}

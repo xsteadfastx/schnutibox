@@ -1,5 +1,3 @@
-// thanks to: https://medium.com/coinmonks/iot-tutorial-read-tags-from-a-usb-rfid-reader-with-raspberry-pi-and-node-red-from-scratch-4554836be127
-//nolint:lll,godox
 package main
 
 import (
@@ -9,11 +7,12 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"go.xsfx.dev/schnutibox/cmd"
+	"go.xsfx.dev/schnutibox/pkg/sselog"
 )
 
 func main() {
-	// TODO: Using io.MultiWriter here to implement a SSE Logger at some point.
-	log.Logger = zerolog.New(io.MultiWriter(os.Stderr)).With().Caller().Logger()
+	sselog.Log = sselog.NewSSELog()
+	log.Logger = zerolog.New(io.MultiWriter(os.Stderr, sselog.Log)).With().Caller().Logger()
 
 	cmd.Execute()
 }

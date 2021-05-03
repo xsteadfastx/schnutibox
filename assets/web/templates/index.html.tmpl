@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang=en>
+        <head>
+                <meta charset=utf-8>
+                <title>schnutibox</title>
+                <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300italic,700,700italic">
+                <link rel="stylesheet" href="/static/files/normalize.css">
+                <link rel="stylesheet" href="/static/files/milligram.css">
+        </head>
+        <body>
+                <div class="container">
+                        <h1>schnutibox</h1>
+                        <h2>logs</h2>
+                        <pre>
+                                <code>
+                                        <div id="log"></div>
+                                </code>
+                        </pre>
+                </div>
+        <script>
+                if(typeof(EventSource) !== "undefined") {
+                        var source = new EventSource("/log");
+                        source.onmessage = function(event) {
+                                var j = JSON.parse(event.data);
+                                document.getElementById("log").innerHTML += j.message + "<br>";
+                        };
+                } else {
+                        document.getElementById("log").innerHTML = "Sorry, your browser does not support server-sent events...";
+                }
+        </script>
+        </body>
+</html>
