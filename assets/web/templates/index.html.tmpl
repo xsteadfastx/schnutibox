@@ -22,7 +22,9 @@
                         var source = new EventSource("/log");
                         source.onmessage = function(event) {
                                 var j = JSON.parse(event.data);
-                                document.getElementById("log").innerHTML += j.message + "<br>";
+                                if (j.hasOwnProperty('message')) {
+                                        document.getElementById("log").innerHTML += j.message + "<br>";
+                                }
                         };
                 } else {
                         document.getElementById("log").innerHTML = "Sorry, your browser does not support server-sent events...";
