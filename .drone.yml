@@ -11,6 +11,7 @@ steps:
   - name: lint
     image: golangci/golangci-lint:latest
     commands:
+      - make install-tools
       - make lint
     depends_on:
       - tags
@@ -25,7 +26,6 @@ steps:
   - name: build
     image: goreleaser/goreleaser:v0.162.0
     commands:
-      - (cd /tmp; go get -u github.com/go-bindata/go-bindata/...)
       - make build
     depends_on:
       - tags
