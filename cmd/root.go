@@ -67,6 +67,7 @@ func initConfig(fatal bool) {
 	// Defaults.
 	viper.SetDefault("box.hostname", "localhost")
 	viper.SetDefault("box.port", 9999)
+	viper.SetDefault("box.grpc", 9998)
 	viper.SetDefault("mpd.hostname", "localhost")
 	viper.SetDefault("mpd.port", 6600)
 	viper.SetDefault("reader.dev", "/dev/hidraw0")

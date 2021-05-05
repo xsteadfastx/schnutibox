@@ -42,3 +42,17 @@ install-tools:
 		github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-openapiv2 \
 		google.golang.org/protobuf/cmd/protoc-gen-go \
 		google.golang.org/grpc/cmd/protoc-gen-go-grpc
+
+.PHONY: protoc-gen
+protoc-gen:
+	protoc \
+		--proto_path=api/proto/v1 \
+		--go_opt=paths=source_relative \
+		--go-grpc_opt=paths=source_relative \
+		--go-grpc_out=pkg/api/v1 \
+		--go_out=pkg/api/v1 \
+		--grpc-gateway_opt=logtostderr=true \
+		--grpc-gateway_opt=paths=source_relative \
+		--grpc-gateway_opt=generate_unbound_methods=true \
+		--grpc-gateway_out=pkg/api/v1 \
+		api/proto/v1/schnutibox.proto

@@ -1,0 +1,15 @@
+syntax = "proto3";
+option go_package = "go.xsfx.dev/schnutibox/pkg/api/v1";
+
+service Identifier {
+  rpc Identify (IdentifyRequest) returns (Tracks) {}
+}
+
+message IdentifyRequest {
+  string id = 1;
+}
+
+message Tracks {
+  string name = 1;
+  repeated string URIS = 2;
+}

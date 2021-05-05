@@ -1,7 +1,11 @@
 //nolint:gochecknoglobals,goerr113
 package config
 
-import "fmt"
+import (
+	"fmt"
+
+	api "go.xsfx.dev/schnutibox/pkg/api/v1"
+)
 
 var Cfg Config
 
@@ -15,6 +19,7 @@ type Config struct {
 	Box struct {
 		Hostname string `mapstructure:"Hostname"`
 		Port     int    `mapstructure:"Port"`
+		Grpc     int    `mapstructure:"Grpc"`
 	} `mapstructure:"Box"`
 
 	// MPD contains the connection details for the Music Player Daemon.
@@ -29,10 +34,7 @@ type Config struct {
 	} `mapstructure:"Meta"`
 
 	// Tracks contains all RFID's and its MPD URLs.
-	Tracks map[string]struct {
-		Name string   `mapstructure:"Name"`
-		URIS []string `mapstructure:"URIS"`
-	} `mapstructure:"Tracks"`
+	Tracks map[string]api.Tracks `mapstructure:"Tracks"`
 }
 
 func (c *Config) Require() error {

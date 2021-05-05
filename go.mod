@@ -19,6 +19,7 @@ require (
 	github.com/tmc/scp v0.0.0-20170824174625-f7b48647feef
 	go.xsfx.dev/logginghandler v0.0.4
 	golang.org/x/crypto v0.0.0-20201221181555-eec23a3978ad
+	google.golang.org/grpc v1.37.0
 	google.golang.org/grpc/cmd/protoc-gen-go-grpc v1.1.0
 	google.golang.org/protobuf v1.26.0
 	gotest.tools/v3 v3.0.3 // indirect
