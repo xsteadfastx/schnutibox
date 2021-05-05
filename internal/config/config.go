@@ -19,7 +19,6 @@ type Config struct {
 	Box struct {
 		Hostname string `mapstructure:"Hostname"`
 		Port     int    `mapstructure:"Port"`
-		Grpc     int    `mapstructure:"Grpc"`
 	} `mapstructure:"Box"`
 
 	// MPD contains the connection details for the Music Player Daemon.
