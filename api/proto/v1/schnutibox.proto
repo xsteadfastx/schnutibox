@@ -1,15 +1,22 @@
 syntax = "proto3";
+package schnutibox.v1;
 option go_package = "go.xsfx.dev/schnutibox/pkg/api/v1";
+import "google/api/annotations.proto";
 
-service Identifier {
-  rpc Identify (IdentifyRequest) returns (Tracks) {}
+service IdentifierService {
+  rpc Identify (IdentifyRequest) returns (IdentifyResponse) {
+    option (google.api.http) = {
+      post: "/v1/identify"
+      body: "*"
+    };
+  }
 }
 
 message IdentifyRequest {
   string id = 1;
 }
 
-message Tracks {
+message IdentifyResponse {
   string name = 1;
-  repeated string URIS = 2;
+  repeated string uris = 2;
 }

@@ -4,6 +4,7 @@ go 1.16
 
 require (
 	github.com/Microsoft/go-winio v0.4.16 // indirect
+	github.com/bufbuild/buf v0.37.0
 	github.com/containerd/continuity v0.0.0-20210208174643-50096c924a4e // indirect
 	github.com/fhs/gompd/v2 v2.2.0
 	github.com/fsnotify/fsnotify v1.4.7

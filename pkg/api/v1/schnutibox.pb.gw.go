@@ -31,7 +31,7 @@ var _ = runtime.String
 var _ = utilities.NewDoubleArray
 var _ = metadata.Join
 
-func request_Identifier_Identify_0(ctx context.Context, marshaler runtime.Marshaler, client IdentifierClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func request_IdentifierService_Identify_0(ctx context.Context, marshaler runtime.Marshaler, client IdentifierServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq IdentifyRequest
 	var metadata runtime.ServerMetadata
 
@@ -48,7 +48,7 @@ func request_Identifier_Identify_0(ctx context.Context, marshaler runtime.Marsha
 
 }
 
-func local_request_Identifier_Identify_0(ctx context.Context, marshaler runtime.Marshaler, server IdentifierServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func local_request_IdentifierService_Identify_0(ctx context.Context, marshaler runtime.Marshaler, server IdentifierServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq IdentifyRequest
 	var metadata runtime.ServerMetadata
 
@@ -65,24 +65,24 @@ func local_request_Identifier_Identify_0(ctx context.Context, marshaler runtime.
 
 }
 
-// RegisterIdentifierHandlerServer registers the http handlers for service Identifier to "mux".
-// UnaryRPC     :call IdentifierServer directly.
+// RegisterIdentifierServiceHandlerServer registers the http handlers for service IdentifierService to "mux".
+// UnaryRPC     :call IdentifierServiceServer directly.
 // StreamingRPC :currently unsupported pending https://github.com/grpc/grpc-go/issues/906.
-// Note that using this registration option will cause many gRPC library features to stop working. Consider using RegisterIdentifierHandlerFromEndpoint instead.
-func RegisterIdentifierHandlerServer(ctx context.Context, mux *runtime.ServeMux, server IdentifierServer) error {
+// Note that using this registration option will cause many gRPC library features to stop working. Consider using RegisterIdentifierServiceHandlerFromEndpoint instead.
+func RegisterIdentifierServiceHandlerServer(ctx context.Context, mux *runtime.ServeMux, server IdentifierServiceServer) error {
 
-	mux.Handle("POST", pattern_Identifier_Identify_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_IdentifierService_Identify_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/.Identifier/Identify")
+		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/schnutibox.v1.IdentifierService/Identify")
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_Identifier_Identify_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_IdentifierService_Identify_0(rctx, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
@@ -90,16 +90,16 @@ func RegisterIdentifierHandlerServer(ctx context.Context, mux *runtime.ServeMux,
 			return
 		}
 
-		forward_Identifier_Identify_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_IdentifierService_Identify_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
 	return nil
 }
 
-// RegisterIdentifierHandlerFromEndpoint is same as RegisterIdentifierHandler but
+// RegisterIdentifierServiceHandlerFromEndpoint is same as RegisterIdentifierServiceHandler but
 // automatically dials to "endpoint" and closes the connection when "ctx" gets done.
-func RegisterIdentifierHandlerFromEndpoint(ctx context.Context, mux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) (err error) {
+func RegisterIdentifierServiceHandlerFromEndpoint(ctx context.Context, mux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) (err error) {
 	conn, err := grpc.Dial(endpoint, opts...)
 	if err != nil {
 		return err
@@ -119,39 +119,39 @@ func RegisterIdentifierHandlerFromEndpoint(ctx context.Context, mux *runtime.Ser
 		}()
 	}()
 
-	return RegisterIdentifierHandler(ctx, mux, conn)
+	return RegisterIdentifierServiceHandler(ctx, mux, conn)
 }
 
-// RegisterIdentifierHandler registers the http handlers for service Identifier to "mux".
+// RegisterIdentifierServiceHandler registers the http handlers for service IdentifierService to "mux".
 // The handlers forward requests to the grpc endpoint over "conn".
-func RegisterIdentifierHandler(ctx context.Context, mux *runtime.ServeMux, conn *grpc.ClientConn) error {
-	return RegisterIdentifierHandlerClient(ctx, mux, NewIdentifierClient(conn))
+func RegisterIdentifierServiceHandler(ctx context.Context, mux *runtime.ServeMux, conn *grpc.ClientConn) error {
+	return RegisterIdentifierServiceHandlerClient(ctx, mux, NewIdentifierServiceClient(conn))
 }
 
-// RegisterIdentifierHandlerClient registers the http handlers for service Identifier
-// to "mux". The handlers forward requests to the grpc endpoint over the given implementation of "IdentifierClient".
-// Note: the gRPC framework executes interceptors within the gRPC handler. If the passed in "IdentifierClient"
+// RegisterIdentifierServiceHandlerClient registers the http handlers for service IdentifierService
+// to "mux". The handlers forward requests to the grpc endpoint over the given implementation of "IdentifierServiceClient".
+// Note: the gRPC framework executes interceptors within the gRPC handler. If the passed in "IdentifierServiceClient"
 // doesn't go through the normal gRPC flow (creating a gRPC client etc.) then it will be up to the passed in
-// "IdentifierClient" to call the correct interceptors.
-func RegisterIdentifierHandlerClient(ctx context.Context, mux *runtime.ServeMux, client IdentifierClient) error {
+// "IdentifierServiceClient" to call the correct interceptors.
+func RegisterIdentifierServiceHandlerClient(ctx context.Context, mux *runtime.ServeMux, client IdentifierServiceClient) error {
 
-	mux.Handle("POST", pattern_Identifier_Identify_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_IdentifierService_Identify_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/.Identifier/Identify")
+		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/schnutibox.v1.IdentifierService/Identify")
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_Identifier_Identify_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_IdentifierService_Identify_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_Identifier_Identify_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_IdentifierService_Identify_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -159,9 +159,9 @@ func RegisterIdentifierHandlerClient(ctx context.Context, mux *runtime.ServeMux,
 }
 
 var (
-	pattern_Identifier_Identify_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"Identifier", "Identify"}, ""))
+	pattern_IdentifierService_Identify_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"v1", "identify"}, ""))
 )
 
 var (
-	forward_Identifier_Identify_0 = runtime.ForwardResponseMessage
+	forward_IdentifierService_Identify_0 = runtime.ForwardResponseMessage
 )

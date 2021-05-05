@@ -39,12 +39,34 @@ func root(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+type server struct{}
+
+// Identify searches in tracks config for entries and returns them.
+// nolint:goerr113
+func (s server) Identify(ctx context.Context, in *api.IdentifyRequest) (*api.IdentifyResponse, error) {
+	r := &api.IdentifyResponse{}
+
+	if in.Id == "" {
+		return r, fmt.Errorf("no id in request specified")
+	}
+
+	t, ok := config.Cfg.Tracks[in.Id]
+	if !ok {
+		return r, fmt.Errorf("could not find track for id: %s", in.Id)
+	}
+
+	r.Name = t.Name
+	r.Uris = t.Uris
+
+	return r, nil
+}
+
 func gw(conn string) *runtime.ServeMux {
 	ctx := context.Background()
 	gopts := []grpc.DialOption{grpc.WithInsecure()}
 	s := grpc.NewServer()
 
-	api.RegisterIdentifierServer(s, api.Server{})
+	api.RegisterIdentifierServiceServer(s, server{})
 	reflection.Register(s)
 
 	lis, err := net.Listen("tcp", conn)
@@ -59,7 +81,7 @@ func gw(conn string) *runtime.ServeMux {
 	}()
 
 	gwmux := runtime.NewServeMux()
-	if err := api.RegisterIdentifierHandlerFromEndpoint(ctx, gwmux, conn, gopts); err != nil {
+	if err := api.RegisterIdentifierServiceHandlerFromEndpoint(ctx, gwmux, conn, gopts); err != nil {
 		log.Fatal().Err(err).Msg("could not register grpc endpoint")
 	}
 
@@ -70,8 +92,6 @@ func Run(command *cobra.Command, args []string) {
 	// Create host string for serving web.
 	lh := fmt.Sprintf("%s:%d", config.Cfg.Box.Hostname, config.Cfg.Box.Port)
 	lg := fmt.Sprintf("%s:%d", config.Cfg.Box.Hostname, config.Cfg.Box.Grpc)
-
-	// GRPC.
 
 	// Define http handlers.
 	mux := http.NewServeMux()

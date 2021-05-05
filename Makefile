@@ -13,6 +13,7 @@ generate:
 .PHONY: lint
 lint:
 	golangci-lint run --timeout 10m --enable-all --disable=exhaustivestruct
+	buf lint -v
 
 .PHONY: test
 test:
@@ -37,22 +38,16 @@ build-image:
 
 .PHONY: install-tools
 install-tools:
-	go install \
+	go install -v \
 		github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway \
 		github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-openapiv2 \
 		google.golang.org/protobuf/cmd/protoc-gen-go \
-		google.golang.org/grpc/cmd/protoc-gen-go-grpc
+		google.golang.org/grpc/cmd/protoc-gen-go-grpc \
+		github.com/bufbuild/buf/cmd/buf \
+		github.com/bufbuild/buf/cmd/protoc-gen-buf-breaking \
+		github.com/bufbuild/buf/cmd/protoc-gen-buf-lint
 
-.PHONY: protoc-gen
-protoc-gen:
-	protoc \
-		--proto_path=api/proto/v1 \
-		--go_opt=paths=source_relative \
-		--go-grpc_opt=paths=source_relative \
-		--go-grpc_out=pkg/api/v1 \
-		--go_out=pkg/api/v1 \
-		--grpc-gateway_opt=logtostderr=true \
-		--grpc-gateway_opt=paths=source_relative \
-		--grpc-gateway_opt=generate_unbound_methods=true \
-		--grpc-gateway_out=pkg/api/v1 \
-		api/proto/v1/schnutibox.proto
+.PHONY: grpc-gen
+grpc-gen:
+	buf beta mod update
+	buf generate -v

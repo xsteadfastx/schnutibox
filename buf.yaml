@@ -1,0 +1,11 @@
+---
+version: v1beta1
+name: buf.build/xsteadfastx/schnutibox
+deps:
+  - buf.build/beta/googleapis
+build:
+  roots:
+    - api/proto/v1/
+lint:
+  except:
+    - PACKAGE_DIRECTORY_MATCH

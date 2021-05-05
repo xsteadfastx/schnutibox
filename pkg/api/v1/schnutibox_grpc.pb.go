@@ -14,86 +14,84 @@ import (
 // Requires gRPC-Go v1.32.0 or later.
 const _ = grpc.SupportPackageIsVersion7
 
-// IdentifierClient is the client API for Identifier service.
+// IdentifierServiceClient is the client API for IdentifierService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type IdentifierClient interface {
-	Identify(ctx context.Context, in *IdentifyRequest, opts ...grpc.CallOption) (*Tracks, error)
+type IdentifierServiceClient interface {
+	Identify(ctx context.Context, in *IdentifyRequest, opts ...grpc.CallOption) (*IdentifyResponse, error)
 }
 
-type identifierClient struct {
+type identifierServiceClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewIdentifierClient(cc grpc.ClientConnInterface) IdentifierClient {
-	return &identifierClient{cc}
+func NewIdentifierServiceClient(cc grpc.ClientConnInterface) IdentifierServiceClient {
+	return &identifierServiceClient{cc}
 }
 
-func (c *identifierClient) Identify(ctx context.Context, in *IdentifyRequest, opts ...grpc.CallOption) (*Tracks, error) {
-	out := new(Tracks)
-	err := c.cc.Invoke(ctx, "/Identifier/Identify", in, out, opts...)
+func (c *identifierServiceClient) Identify(ctx context.Context, in *IdentifyRequest, opts ...grpc.CallOption) (*IdentifyResponse, error) {
+	out := new(IdentifyResponse)
+	err := c.cc.Invoke(ctx, "/schnutibox.v1.IdentifierService/Identify", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-// IdentifierServer is the server API for Identifier service.
-// All implementations must embed UnimplementedIdentifierServer
+// IdentifierServiceServer is the server API for IdentifierService service.
+// All implementations should embed UnimplementedIdentifierServiceServer
 // for forward compatibility
-type IdentifierServer interface {
-	Identify(context.Context, *IdentifyRequest) (*Tracks, error)
-	mustEmbedUnimplementedIdentifierServer()
+type IdentifierServiceServer interface {
+	Identify(context.Context, *IdentifyRequest) (*IdentifyResponse, error)
 }
 
-// UnimplementedIdentifierServer must be embedded to have forward compatible implementations.
-type UnimplementedIdentifierServer struct {
+// UnimplementedIdentifierServiceServer should be embedded to have forward compatible implementations.
+type UnimplementedIdentifierServiceServer struct {
 }
 
-func (UnimplementedIdentifierServer) Identify(context.Context, *IdentifyRequest) (*Tracks, error) {
+func (UnimplementedIdentifierServiceServer) Identify(context.Context, *IdentifyRequest) (*IdentifyResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Identify not implemented")
 }
-func (UnimplementedIdentifierServer) mustEmbedUnimplementedIdentifierServer() {}
 
-// UnsafeIdentifierServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to IdentifierServer will
+// UnsafeIdentifierServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to IdentifierServiceServer will
 // result in compilation errors.
-type UnsafeIdentifierServer interface {
-	mustEmbedUnimplementedIdentifierServer()
+type UnsafeIdentifierServiceServer interface {
+	mustEmbedUnimplementedIdentifierServiceServer()
 }
 
-func RegisterIdentifierServer(s grpc.ServiceRegistrar, srv IdentifierServer) {
-	s.RegisterService(&Identifier_ServiceDesc, srv)
+func RegisterIdentifierServiceServer(s grpc.ServiceRegistrar, srv IdentifierServiceServer) {
+	s.RegisterService(&IdentifierService_ServiceDesc, srv)
 }
 
-func _Identifier_Identify_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _IdentifierService_Identify_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(IdentifyRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(IdentifierServer).Identify(ctx, in)
+		return srv.(IdentifierServiceServer).Identify(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/Identifier/Identify",
+		FullMethod: "/schnutibox.v1.IdentifierService/Identify",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(IdentifierServer).Identify(ctx, req.(*IdentifyRequest))
+		return srv.(IdentifierServiceServer).Identify(ctx, req.(*IdentifyRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-// Identifier_ServiceDesc is the grpc.ServiceDesc for Identifier service.
+// IdentifierService_ServiceDesc is the grpc.ServiceDesc for IdentifierService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
-var Identifier_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "Identifier",
-	HandlerType: (*IdentifierServer)(nil),
+var IdentifierService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "schnutibox.v1.IdentifierService",
+	HandlerType: (*IdentifierServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
 			MethodName: "Identify",
-			Handler:    _Identifier_Identify_Handler,
+			Handler:    _IdentifierService_Identify_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

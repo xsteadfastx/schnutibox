@@ -123,7 +123,7 @@ func Run(cmd *cobra.Command, args []string) {
 			}
 
 			// Try to play track.
-			if err := m.play(logger, id, tracks.Name, tracks.URIS); err != nil {
+			if err := m.play(logger, id, tracks.Name, tracks.Uris); err != nil {
 				logger.Error().Err(err).Msg("could not play track")
 			}
 		}
