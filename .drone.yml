@@ -71,6 +71,9 @@ services:
     volumes:
       - name: dockersock
         path: /var/run
+    when:
+      event:
+        - tag
 
 volumes:
   - name: dockersock
