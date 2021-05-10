@@ -38,10 +38,22 @@ steps:
 
   - name: release
     image: goreleaser/goreleaser:v0.162.0
+    volumes:
+      - name: dockersock
+        path: /var/run
     environment:
       GITHUB_TOKEN:
         from_secret: github_token
+      DOCKER_USERNAME:
+        from_secret: docker_username
+      DOCKER_PASSWORD:
+        from_secret: github_token
+      DOCKER_REGISTRY: ghcr.io
     commands:
+      - sleep 5
+      - >
+        echo $DOCKER_PASSWORD |
+        docker login $DOCKER_REGISTRY -u $DOCKER_USERNAME --password-stdin
       - goreleaser release --rm-dist
     depends_on:
       - tags
@@ -50,3 +62,15 @@ steps:
     when:
       event:
         - tag
+
+services:
+  - name: docker
+    image: docker:dind
+    privileged: true
+    volumes:
+      - name: dockersock
+        path: /var/run
+
+volumes:
+  - name: dockersock
+    temp: {}

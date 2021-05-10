@@ -41,3 +41,12 @@ release:
   github:
     owner: xsteadfastx
     name: schnutibox
+
+dockers:
+  - dockerfile: build/package/docker/Dockerfile
+    goos: linux
+    goarch: amd64
+    image_templates:
+      - ghcr.io/xsteadfastx/schnutibox:latest
+      - ghcr.io/xsteadfastx/schnutibox:{{ .Tag }}
+      - ghcr.io/xsteadfastx/schnutibox:v{{ .Major}}
