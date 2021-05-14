@@ -99,15 +99,23 @@ func Run(command *cobra.Command, args []string) {
 
 	// Define http handlers.
 	mux := http.NewServeMux()
-	mux.Handle("/", logginghandler.Handler(http.HandlerFunc(root)))
-	mux.Handle("/log", logginghandler.Handler(http.HandlerFunc(sselog.LogHandler)))
+
+	mux.Handle("/", http.HandlerFunc(root))
+
+	mux.Handle("/log", http.HandlerFunc(sselog.LogHandler))
+
 	mux.Handle(
 		"/static/",
-		logginghandler.Handler(
-			http.StripPrefix("/static/", http.FileServer(http.FS(assets.Files))),
-		),
+		http.StripPrefix("/static/", http.FileServer(assets.Files)),
 	)
+
+	mux.Handle(
+		"/swagger-ui/",
+		http.StripPrefix("/swagger-ui/", http.FileServer(assets.SwaggerUI)),
+	)
+
 	mux.Handle("/metrics", promhttp.Handler())
+
 	mux.Handle("/api/", http.StripPrefix("/api", gw(grpcServer, lh)))
 
 	// Serving http.

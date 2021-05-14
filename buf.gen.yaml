@@ -12,3 +12,7 @@ plugins:
   - name: grpc-gateway
     out: pkg/api/v1
     opt: paths=source_relative
+
+  - name: openapiv2
+    # out: api/openapiv2
+    out: assets/web/swagger-ui
