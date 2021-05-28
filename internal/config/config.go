@@ -7,6 +7,7 @@ import (
 	api "go.xsfx.dev/schnutibox/pkg/api/v1"
 )
 
+// Cfg stores a global config object.
 var Cfg Config
 
 type Config struct {

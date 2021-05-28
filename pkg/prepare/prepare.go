@@ -33,6 +33,7 @@ const (
 	snapclientGroup    = "snapclient"
 )
 
+// Cfg represents the structured data for the schnutibox config file.
 var Cfg = struct {
 	RFIDReader          string
 	ReadOnly            bool
