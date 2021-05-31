@@ -65,9 +65,41 @@ func (m *mpc) play(logger zerolog.Logger, rfid string, name string, uris []strin
 		}
 	}
 
-	metrics.NewPlay(rfid, name, uris)
+	// Getting playlist uris from MPD server.
+	// This is needed to identify the right metric to use.
+	mpdURIS, err := m.playlistURIS()
+	if err != nil {
+		metrics.BoxErrors.Inc()
+
+		return err
+	}
+
+	metrics.NewPlay(rfid, name, mpdURIS)
 
 	return m.conn.Play(-1)
+}
+
+// playlistURIS extracts uris from MPD playlist.
+func (m *mpc) playlistURIS() ([]string, error) {
+	// Check if we can connect to MPD server.
+	if err := m.conn.Ping(); err != nil {
+		return nil, fmt.Errorf("could not ping MPD server: %w", err)
+	}
+
+	attrs, err := m.conn.PlaylistInfo(-1, -1)
+	if err != nil {
+		return nil, fmt.Errorf("could not get playlist: %w", err)
+	}
+
+	// Stores the tracklist it got from the MPD server.
+	uris := []string{}
+
+	// Builds uri list.
+	for _, a := range attrs {
+		uris = append(uris, a["file"])
+	}
+
+	return uris, nil
 }
 
 func (m *mpc) watch() {
@@ -79,29 +111,12 @@ func (m *mpc) watch() {
 		for {
 			<-ticker.C
 
-			// Check if we can connect to MPD server.
-			if err := m.conn.Ping(); err != nil {
-				log.Error().Err(err).Msg("could not ping MPD server")
-				metrics.BoxErrors.Inc()
-
-				continue
-			}
-
-			// Getting playlist info.
-			attrs, err := m.conn.PlaylistInfo(-1, -1)
+			uris, err := m.playlistURIS()
 			if err != nil {
-				log.Error().Err(err).Msg("could not get playlist info")
+				log.Error().Err(err).Msg("could not get playlist uris")
 				metrics.BoxErrors.Inc()
 
 				continue
-			}
-
-			// Stores the tracklist it got from the MPD server.
-			uris := []string{}
-
-			// Builds uri list.
-			for _, a := range attrs {
-				uris = append(uris, a["file"])
 			}
 
 			// Gettings MPD state.
@@ -129,16 +144,6 @@ func Run(cmd *cobra.Command, args []string) {
 		log.Fatal().Err(err).Msg("could not start RFID reader")
 	}
 
-	// Create MPD connection on every received event.
-	c, err := mpd.Dial("tcp", fmt.Sprintf("%s:%d", config.Cfg.MPD.Hostname, config.Cfg.MPD.Port))
-	if err != nil {
-		log.Fatal().Err(err).Msg("could not connect to MPD server")
-	}
-
-	m := newMpc(c)
-
-	m.watch()
-
 	go func() {
 		var id string
 
@@ -147,6 +152,14 @@ func Run(cmd *cobra.Command, args []string) {
 			id = <-idChan
 			logger := log.With().Str("id", id).Logger()
 			logger.Info().Msg("received id")
+
+			// Create MPD connection on every received event.
+			c, err := mpd.Dial("tcp", fmt.Sprintf("%s:%d", config.Cfg.MPD.Hostname, config.Cfg.MPD.Port))
+			if err != nil {
+				log.Fatal().Err(err).Msg("could not connect to MPD server")
+			}
+
+			m := newMpc(c)
 
 			// Check of stop tag was detected.
 			if id == config.Cfg.Meta.Stop {

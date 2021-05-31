@@ -10,6 +10,7 @@ import (
 	"go.xsfx.dev/logginghandler"
 )
 
+// Log is the global sse logger struct.
 var Log *SSELog
 
 type SSELog struct {
