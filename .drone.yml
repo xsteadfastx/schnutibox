@@ -17,11 +17,23 @@ steps:
       - tags
 
   - name: test
-    image: golang:latest
+    image: golang:1.16
+    privileged: true
+    volumes:
+      - name: dockersock
+        path: /var/run
+    environment:
+      RASPBIAN_IMAGE: /tmp/2021-05-07-raspios-buster-armhf-lite.img
     commands:
-      - make test
+      - apt update
+      - apt install -y multipath-tools unzip
+      - (cd /tmp; wget https://downloads.raspberrypi.org/raspios_lite_armhf/images/raspios_lite_armhf-2021-05-28/2021-05-07-raspios-buster-armhf-lite.zip)
+      - (cd /tmp; unzip 2021-05-07-raspios-buster-armhf-lite.zip)
+      - make build-image
+      - make test-all
     depends_on:
       - tags
+      - lint
 
   - name: build
     image: goreleaser/goreleaser:v0.162.0

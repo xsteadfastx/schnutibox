@@ -19,7 +19,7 @@ import (
 )
 
 const (
-	sdcard           = "/home/marv/tmp/2021-03-04-raspios-buster-armhf-lite.img"
+	sdcard           = "/tmp/2021-05-04-raspios-buster-armhf-lite.img"
 	sshUser          = "pi"
 	sshPass          = "raspberry"
 	sshHost          = "localhost"

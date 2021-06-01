@@ -23,6 +23,9 @@ test:
 test-integration: release
 	go test -v -tags=integration -timeout=120m
 
+.PHONY: test-all
+test-all: test test-integration
+
 .PHONY: readme
 readme:
 	goreadme -title revive > README.md
