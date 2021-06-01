@@ -34,6 +34,7 @@ steps:
     depends_on:
       - tags
       - lint
+      - docker
 
   - name: build
     image: goreleaser/goreleaser:v0.162.0
