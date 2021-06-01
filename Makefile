@@ -20,8 +20,8 @@ test:
 	go test -v -race -cover ./...
 
 .PHONY: test-integration
-test-integration: release
-	go test -v -tags=integration -timeout=120m
+test-integration: build
+	go test -v -tags=integration -timeout=240m
 
 .PHONY: test-all
 test-all: test test-integration
@@ -37,7 +37,7 @@ tidy:
 
 .PHONY: build-image
 build-image:
-	sudo ./scripts/build.sh
+	./scripts/build.sh
 
 .PHONY: install-tools
 install-tools:

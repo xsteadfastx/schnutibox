@@ -1,0 +1,61 @@
+---
+project_name: "don"
+
+gitea_urls:
+  api: https://git.xsfx.dev/api/v1/
+
+builds:
+  - main: ./cmd
+    env:
+      - CGO_ENABLED=0
+
+    goos:
+      - linux
+
+    goarch:
+      - amd64
+      - arm64
+      - 386
+      - arm
+
+    goarm:
+      - 5
+      - 6
+      - 7
+
+    ldflags:
+      - "-s"
+      - "-w"
+      - "-extldflags '-static'"
+      - "-X go.xsfx.dev/don/cmd/cmds.date={{.Date}}"
+      - "-X go.xsfx.dev/don/cmd/cmds.commit={{.ShortCommit}}"
+      - "-X go.xsfx.dev/don/cmd/cmds.version={{.Version}}"
+
+checksum:
+  name_template: "checksums.txt"
+
+snapshot:
+  name_template: "{{.Tag}}-next"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^ci:"
+      - "^lint:"
+      - "^meta:"
+      - "^deployment"
+      - "happy linting"
+      - "prepares release"
+
+archives:
+  - format: binary
+    replacements:
+      darwin: macos
+
+release:
+  gitea:
+    owner: xsteadfastx
+    name: don

@@ -18,39 +18,60 @@ steps:
 
   - name: test
     image: golang:1.16
-    privileged: true
+    commands:
+      - make test
+    depends_on:
+      - tags
+      - lint
+
+  - name: create-image
+    image: docker:latest
     volumes:
       - name: dockersock
         path: /var/run
-    environment:
-      RASPBIAN_IMAGE: /tmp/2021-05-07-raspios-buster-armhf-lite.img
+      - name: swap
+        path: /SWAP
     commands:
-      - apt update
-      - apt install -y multipath-tools unzip
-      - (cd /tmp; wget -4 https://downloads.raspberrypi.org/raspios_lite_armhf/images/raspios_lite_armhf-2021-05-28/2021-05-07-raspios-buster-armhf-lite.zip)
-      - (cd /tmp; unzip 2021-05-07-raspios-buster-armhf-lite.zip)
-      - make build-image
-      - make test-all
+      - apk add --no-cache openssh-client
+      - wget https://raw.githubusercontent.com/xsteadfastx/docker-qemu-alpine/main/ssh
+      - chmod 600 ssh
+      - wget -O /usr/local/bin/don https://git.xsfx.dev/attachments/8f8f4dbb-8254-448a-a549-552f8b96cb26
+      - chmod +x /usr/local/bin/don
+      - don -t 15m -r 15s -c "ssh -i ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 root@qemu-alpine"
+      - cat scripts/rpi-image-test/build.sh | ssh -i ssh -o StrictHostKeyChecking=no root@qemu-alpine
+      - ssh -i ssh -o StrictHostKeyChecking=no root@qemu-alpine poweroff
+      - ls -lah /SWAP
     depends_on:
-      - tags
-      - lint
+      - test
+
+  - name: test-integration
+    image: golang:1.16
+    volumes:
+      - name: dockersock
+        path: /var/run
+    commands:
+      - (cd /tmp; go install github.com/goreleaser/goreleaser@v0.169.0)
+      - make test-integration
+    depends_on:
+      - test
       - docker
+      - qemu-alpine
+      - create-image
 
   - name: build
-    image: goreleaser/goreleaser:v0.162.0
+    image: goreleaser/goreleaser:v0.169.0
     commands:
       - make build
     depends_on:
-      - tags
-      - lint
       - test
+      - test-integration
     when:
       event:
         exclude:
           - tag
 
   - name: release
-    image: goreleaser/goreleaser:v0.162.0
+    image: goreleaser/goreleaser:v0.169.0
     volumes:
       - name: dockersock
         path: /var/run
@@ -69,9 +90,9 @@ steps:
         docker login $DOCKER_REGISTRY -u $DOCKER_USERNAME --password-stdin
       - goreleaser release --rm-dist
     depends_on:
-      - tags
-      - lint
       - test
+      - lint
+      - test-integration
       - docker
     when:
       event:
@@ -84,7 +105,18 @@ services:
     volumes:
       - name: dockersock
         path: /var/run
+      - name: swap
+        path: /SWAP
+
+  - name: qemu-alpine
+    image: ghcr.io/xsteadfastx/qemu-alpine:latest
+    volumes:
+      - name: swap
+        path: /SWAP
 
 volumes:
   - name: dockersock
+    temp: {}
+
+  - name: swap
     temp: {}

@@ -12,18 +12,20 @@ import (
 
 	sshclient "github.com/helloyi/go-sshclient"
 	"github.com/ory/dockertest/v3"
+	dc "github.com/ory/dockertest/v3/docker"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/tmc/scp"
+	"go.xsfx.dev/don"
 	"golang.org/x/crypto/ssh"
 )
 
 const (
-	sdcard           = "/tmp/2021-05-04-raspios-buster-armhf-lite.img"
+	sdcard           = "/SWAP/2021-05-07-raspios-buster-armhf-lite.img"
 	sshUser          = "pi"
 	sshPass          = "raspberry"
-	sshHost          = "localhost"
-	containerTimeout = 5 * time.Minute
+	sshHost          = "docker"
+	containerTimeout = 15 * time.Minute
 )
 
 // Variables used for accessing stuff in the test functions.
@@ -91,31 +93,17 @@ func copySchnutibox(user, pass, host string) error {
 }
 
 // teardown removes some temp test stuff.
-func teardown(img string, pool *dockertest.Pool, resource *dockertest.Resource) {
+func teardown(pool *dockertest.Pool, resource *dockertest.Resource) {
 	log.Info().Msg("getting rid of container")
 
 	if err := pool.Purge(resource); err != nil {
 		log.Fatal().Err(err).Msg("could not cleanup")
-	}
-
-	log.Info().Str("img", img).Msg("deleting temp image")
-
-	if err := os.Remove(img); err != nil {
-		log.Fatal().Err(err).Msg("could not delete temp image")
 	}
 }
 
 // nolint:funlen
 func TestMain(m *testing.M) {
 	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
-
-	// Create tmp image.
-	img, err := raspbianWorkCopy()
-	if err != nil {
-		log.Error().Err(err).Msg("could not create temp work image")
-	}
-
-	log.Info().Str("img", img).Msg("created temp image file")
 
 	pool, err := dockertest.NewPool("")
 	if err != nil {
@@ -132,8 +120,11 @@ func TestMain(m *testing.M) {
 		&dockertest.RunOptions{
 			Repository:   "lukechilds/dockerpi",
 			Tag:          "vm",
-			Mounts:       []string{img + ":/sdcard/filesystem.img"},
+			Mounts:       []string{sdcard + ":/sdcard/filesystem.img"},
 			ExposedPorts: []string{"5022/tcp"},
+			PortBindings: map[dc.Port][]dc.PortBinding{
+				"5022/tcp": {{HostIP: "0.0.0.0", HostPort: "5022"}},
+			},
 		})
 	if err != nil {
 		log.Fatal().Err(err).Msg("could not start resource")
@@ -144,37 +135,26 @@ func TestMain(m *testing.M) {
 
 	sshConn = sshHost + ":" + resource.GetPort("5022/tcp")
 
-	// Channels for checking readyness of the container.
-	sshReady := make(chan struct{})
-	sshError := make(chan error)
-
-	// Constant check for readyness of container.
-	go func() {
-		for {
+	// Readiness.
+	if err := don.Check(
+		func() bool {
 			client, err := sshclient.DialWithPasswd(sshConn, sshUser, sshPass)
 			if err == nil {
 				if err := client.Close(); err != nil {
-					sshError <- err
+					return false
 				}
-				sshReady <- struct{}{}
+
+				return true
 			}
 
-			log.Debug().Msg("container not ready yet")
-			time.Sleep(5 * time.Second)
-		}
-	}()
-
-	select {
-	case err := <-sshError:
-		log.Error().Err(err).Msg("could not connect to container via ssh")
-		teardown(img, pool, resource)
+			return false
+		},
+		20*time.Minute,
+		15*time.Second,
+	); err != nil {
+		log.Error().Err(err).Msg("timeout. could not connect to container via ssh")
+		teardown(pool, resource)
 		os.Exit(1)
-	case <-time.After(containerTimeout):
-		log.Error().Msg("timeout. could not connect to container via ssh")
-		teardown(img, pool, resource)
-		os.Exit(1)
-	case <-sshReady:
-		log.Info().Msg("container is ready")
 	}
 
 	// Connect via SSH.
@@ -183,7 +163,7 @@ func TestMain(m *testing.M) {
 	client, err = sshclient.DialWithPasswd(sshConn, sshUser, sshPass)
 	if err != nil {
 		log.Error().Err(err).Msg("could not connect via ssh")
-		teardown(img, pool, resource)
+		teardown(pool, resource)
 		os.Exit(1)
 	}
 
@@ -196,7 +176,7 @@ func TestMain(m *testing.M) {
 
 	if err := copySchnutibox(sshUser, sshPass, sshConn); err != nil {
 		log.Error().Err(err).Msg("could not copy schnutibox")
-		teardown(img, pool, resource)
+		teardown(pool, resource)
 		os.Exit(1)
 	}
 
@@ -208,7 +188,7 @@ func TestMain(m *testing.M) {
 		SetStdio(os.Stdout, os.Stderr).
 		Run(); err != nil {
 		log.Error().Err(err).Msg("could not create /usr/local/bin on container")
-		teardown(img, pool, resource)
+		teardown(pool, resource)
 		os.Exit(1)
 	}
 
@@ -219,7 +199,7 @@ func TestMain(m *testing.M) {
 	code := m.Run()
 
 	// Removing container.
-	teardown(img, pool, resource)
+	teardown(pool, resource)
 
 	os.Exit(code)
 }
