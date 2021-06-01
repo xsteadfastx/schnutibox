@@ -470,6 +470,7 @@ func mopidy() error {
 	// Install.
 	cmd = exec.Command(
 		"apt-get", "install", "-y",
+		"libgstreamer-plugins-bad",
 		"mopidy",
 		"mopidy-alsamixer",
 		"mopidy-mpd",
