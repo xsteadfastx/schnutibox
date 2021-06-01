@@ -13,29 +13,26 @@ import (
 )
 
 const (
-	TickerTime  = time.Second
-	Timeout     = 5 * time.Second
-	TimeoutWait = time.Second / 2
+	tickerTime  = time.Second
+	timeout     = 5 * time.Second
+	timeoutWait = time.Second / 2
 )
 
-var (
-	ErrCouldNotConnect = errors.New("could not connect")
-	ErrTimeout         = errors.New("timeout")
-)
+var errTimeout = errors.New("timeout")
 
 func Conn() (*mpd.Client, error) {
-	t := time.NewTimer(Timeout)
+	t := time.NewTimer(timeout)
 
 	for {
 		select {
 		case <-t.C:
-			return nil, ErrTimeout
+			return nil, errTimeout
 		default:
 			c, err := mpd.Dial("tcp", fmt.Sprintf("%s:%d", config.Cfg.MPD.Hostname, config.Cfg.MPD.Port))
 			if err != nil {
 				log.Error().Err(err).Msg("could not connect")
 
-				time.Sleep(TimeoutWait)
+				time.Sleep(timeoutWait)
 
 				continue
 			}
@@ -77,7 +74,7 @@ func PlaylistURIS() ([]string, error) {
 func Watcher() {
 	log.Debug().Msg("starting watch")
 
-	ticker := time.NewTicker(TickerTime)
+	ticker := time.NewTicker(tickerTime)
 
 	go func() {
 		for {
@@ -121,6 +118,7 @@ func Stop(logger zerolog.Logger) error {
 		return fmt.Errorf("could not connect: %w", err)
 	}
 
+	// nolint:wrapcheck
 	return m.Stop()
 }
 
@@ -132,6 +130,7 @@ func Clear(logger zerolog.Logger) error {
 		return fmt.Errorf("could not connect: %w", err)
 	}
 
+	// nolint:wrapcheck
 	return m.Clear()
 }
 
@@ -164,7 +163,7 @@ func Play(logger zerolog.Logger, rfid string, name string, uris []string) error 
 		if err := m.Add(i); err != nil {
 			metrics.BoxErrors.Inc()
 
-			return err
+			return fmt.Errorf("could not add track: %w", err)
 		}
 	}
 
@@ -179,5 +178,6 @@ func Play(logger zerolog.Logger, rfid string, name string, uris []string) error 
 
 	metrics.NewPlay(rfid, name, mpdURIS)
 
+	// nolint:wrapcheck
 	return m.Play(-1)
 }
