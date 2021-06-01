@@ -18,9 +18,9 @@ builds:
       - "-s"
       - "-w"
       - "-extldflags '-static'"
-      - "-X go.xsfx.dev/cmd.version={{.Version}}"
-      - "-X go.xsfx.dev/cmd.commit={{.ShortCommit}}"
-      - "-X go.xsfx.dev/cmd.date={{.Date}}"
+      - "-X go.xsfx.dev/schnutibox/cmd.version={{.Version}}"
+      - "-X go.xsfx.dev/schnutibox/cmd.commit={{.ShortCommit}}"
+      - "-X go.xsfx.dev/schnutibox/cmd.date={{.Date}}"
 
 checksum:
   name_template: "checksums.txt"
