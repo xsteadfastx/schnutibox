@@ -27,7 +27,7 @@ steps:
     commands:
       - apt update
       - apt install -y multipath-tools unzip
-      - (cd /tmp; wget https://downloads.raspberrypi.org/raspios_lite_armhf/images/raspios_lite_armhf-2021-05-28/2021-05-07-raspios-buster-armhf-lite.zip)
+      - (cd /tmp; wget -4 https://downloads.raspberrypi.org/raspios_lite_armhf/images/raspios_lite_armhf-2021-05-28/2021-05-07-raspios-buster-armhf-lite.zip)
       - (cd /tmp; unzip 2021-05-07-raspios-buster-armhf-lite.zip)
       - make build-image
       - make test-all
