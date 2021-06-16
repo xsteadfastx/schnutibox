@@ -11,6 +11,7 @@ steps:
   - name: lint
     image: golangci/golangci-lint:v1.39.0
     commands:
+      - make install-tools
       - make lint
     depends_on:
       - tags
@@ -48,13 +49,26 @@ steps:
       - name: dockersock
         path: /var/run
     commands:
-      - (cd /tmp; go install github.com/goreleaser/goreleaser@v0.169.0)
+      - (cd /tmp; go install -v github.com/goreleaser/goreleaser@v0.169.0)
       - make test-integration
     depends_on:
       - test
       - docker
       - qemu-alpine
       - create-image
+
+  - name: create-torrent
+    image: golang:1.16-alpine
+    volumes:
+      - name: swap
+        path: /SWAP
+    commands:
+      - (cd /tmp; go get -v github.com/cenkalti/rain@v1.6.4)
+      - cd /SWAP
+      - zip 2021-05-07-raspios-buster-armhf-lite.zip 2021-05-07-raspios-buster-armhf-lite.img
+      - rain torrent create -o schnutibox.torrent -f 2021-05-07-raspios-buster-armhf-lite.zip
+    depends_on:
+      - prepare-image
 
   - name: build
     image: goreleaser/goreleaser:v0.169.0
