@@ -21,7 +21,6 @@ steps:
       - make test
     depends_on:
       - tags
-      - lint
 
   - name: create-image
     image: docker:latest
@@ -43,7 +42,7 @@ steps:
     depends_on:
       - test
 
-  - name: test-integration
+  - name: prepare-image
     image: golang:1.16
     volumes:
       - name: dockersock
@@ -63,7 +62,7 @@ steps:
       - make build
     depends_on:
       - test
-      - test-integration
+      - prepare-image
     when:
       event:
         exclude:
@@ -91,7 +90,7 @@ steps:
     depends_on:
       - test
       - lint
-      - test-integration
+      - prepare-image
       - docker
     when:
       event:
