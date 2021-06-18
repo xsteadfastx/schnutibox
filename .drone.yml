@@ -1,6 +1,8 @@
 ---
 kind: pipeline
 name: default
+node:
+  runner: hetzner
 
 steps:
   - name: tags
