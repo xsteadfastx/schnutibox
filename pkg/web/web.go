@@ -5,17 +5,20 @@ import (
 	"fmt"
 	"html/template"
 	"net/http"
+	"net/http/pprof"
 	"strings"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 	"go.xsfx.dev/logginghandler"
 	assets "go.xsfx.dev/schnutibox/assets/web"
 	"go.xsfx.dev/schnutibox/internal/config"
 	api "go.xsfx.dev/schnutibox/pkg/api/v1"
 	"go.xsfx.dev/schnutibox/pkg/sselog"
+	"go.xsfx.dev/schnutibox/pkg/timer"
 	"golang.org/x/net/http2"
 	"golang.org/x/net/http2/h2c"
 	"google.golang.org/grpc"
@@ -53,11 +56,11 @@ func grpcHandlerFunc(grpcServer *grpc.Server, otherHandler http.Handler) http.Ha
 	}), &http2.Server{})
 }
 
-type server struct{}
+type identifyServer struct{}
 
 // Identify searches in tracks config for entries and returns them.
 // nolint:goerr113
-func (s server) Identify(ctx context.Context, in *api.IdentifyRequest) (*api.IdentifyResponse, error) {
+func (i identifyServer) Identify(ctx context.Context, in *api.IdentifyRequest) (*api.IdentifyResponse, error) {
 	r := &api.IdentifyResponse{}
 
 	if in.Id == "" {
@@ -75,11 +78,27 @@ func (s server) Identify(ctx context.Context, in *api.IdentifyRequest) (*api.Ide
 	return r, nil
 }
 
+type timerServer struct{}
+
+func (t timerServer) Create(ctx context.Context, req *api.Timer) (*api.Timer, error) {
+	timer.T = req
+
+	return timer.T, nil
+}
+
+// Get just returns the status of the timer.
+func (t timerServer) Get(ctx context.Context, req *api.TimerEmpty) (*api.Timer, error) {
+	return timer.T, nil
+}
+
 func gw(s *grpc.Server, conn string) *runtime.ServeMux {
 	ctx := context.Background()
 	gopts := []grpc.DialOption{grpc.WithInsecure()}
 
-	api.RegisterIdentifierServiceServer(s, server{})
+	api.RegisterIdentifierServiceServer(s, identifyServer{})
+	api.RegisterTimerServiceServer(s, timerServer{})
+
+	// Adds reflections.
 	reflection.Register(s)
 
 	gwmux := runtime.NewServeMux()
@@ -117,6 +136,11 @@ func Run(command *cobra.Command, args []string) {
 	mux.Handle("/metrics", promhttp.Handler())
 
 	mux.Handle("/api/", http.StripPrefix("/api", gw(grpcServer, lh)))
+
+	// PPROF.
+	if viper.GetBool("pprof") {
+		mux.HandleFunc("/debug/pprof/", pprof.Index)
+	}
 
 	// Serving http.
 	log.Info().Msgf("serving HTTP on %s...", lh)

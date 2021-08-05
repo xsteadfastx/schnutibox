@@ -7,6 +7,9 @@
   "tags": [
     {
       "name": "IdentifierService"
+    },
+    {
+      "name": "TimerService"
     }
   ],
   "consumes": [
@@ -45,6 +48,60 @@
         ],
         "tags": [
           "IdentifierService"
+        ]
+      }
+    },
+    "/v1/timer/get": {
+      "get": {
+        "operationId": "TimerService_Get",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1Timer"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "TimerService"
+        ]
+      }
+    },
+    "/v1/timer/set": {
+      "post": {
+        "operationId": "TimerService_Create",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1Timer"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1Timer"
+            }
+          }
+        ],
+        "tags": [
+          "TimerService"
         ]
       }
     }
@@ -99,6 +156,17 @@
           "items": {
             "type": "string"
           }
+        }
+      }
+    },
+    "v1Timer": {
+      "type": "object",
+      "properties": {
+        "duration": {
+          "type": "string"
+        },
+        "current": {
+          "type": "string"
         }
       }
     }

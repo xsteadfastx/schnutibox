@@ -31,6 +31,15 @@ var Play = promauto.NewGaugeVec(
 	[]string{"rfid", "name"},
 )
 
+// Seconds tracks the seconds a play was played.
+var Seconds = promauto.NewCounterVec(
+	prometheus.CounterOpts{
+		Name: "schnutibox_play_seconds_total",
+		Help: "play seconds metrics",
+	},
+	[]string{"rfid", "name"},
+)
+
 // BoxErrors counts schnutibox errors.
 var BoxErrors = promauto.NewCounter(
 	prometheus.CounterOpts{
@@ -56,10 +65,12 @@ func tracksEqual(a, b []string) bool {
 }
 
 // Set sets `1` on play gauge if item is playing, a `0` on every other play.
+// It also raises the counter for played seconds of a play.
 func Set(uris []string, state string) {
 	for r, p := range Plays {
 		if tracksEqual(uris, p.Uris) && state == "play" {
 			Play.WithLabelValues(r, p.Name).Set(1)
+			Seconds.WithLabelValues(r, p.Name).Inc()
 		} else {
 			Play.WithLabelValues(r, p.Name).Set(0)
 		}

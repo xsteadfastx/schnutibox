@@ -97,3 +97,123 @@ var IdentifierService_ServiceDesc = grpc.ServiceDesc{
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "schnutibox.proto",
 }
+
+// TimerServiceClient is the client API for TimerService service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+type TimerServiceClient interface {
+	Create(ctx context.Context, in *Timer, opts ...grpc.CallOption) (*Timer, error)
+	Get(ctx context.Context, in *TimerEmpty, opts ...grpc.CallOption) (*Timer, error)
+}
+
+type timerServiceClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewTimerServiceClient(cc grpc.ClientConnInterface) TimerServiceClient {
+	return &timerServiceClient{cc}
+}
+
+func (c *timerServiceClient) Create(ctx context.Context, in *Timer, opts ...grpc.CallOption) (*Timer, error) {
+	out := new(Timer)
+	err := c.cc.Invoke(ctx, "/schnutibox.v1.TimerService/Create", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *timerServiceClient) Get(ctx context.Context, in *TimerEmpty, opts ...grpc.CallOption) (*Timer, error) {
+	out := new(Timer)
+	err := c.cc.Invoke(ctx, "/schnutibox.v1.TimerService/Get", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// TimerServiceServer is the server API for TimerService service.
+// All implementations should embed UnimplementedTimerServiceServer
+// for forward compatibility
+type TimerServiceServer interface {
+	Create(context.Context, *Timer) (*Timer, error)
+	Get(context.Context, *TimerEmpty) (*Timer, error)
+}
+
+// UnimplementedTimerServiceServer should be embedded to have forward compatible implementations.
+type UnimplementedTimerServiceServer struct {
+}
+
+func (UnimplementedTimerServiceServer) Create(context.Context, *Timer) (*Timer, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Create not implemented")
+}
+func (UnimplementedTimerServiceServer) Get(context.Context, *TimerEmpty) (*Timer, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Get not implemented")
+}
+
+// UnsafeTimerServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to TimerServiceServer will
+// result in compilation errors.
+type UnsafeTimerServiceServer interface {
+	mustEmbedUnimplementedTimerServiceServer()
+}
+
+func RegisterTimerServiceServer(s grpc.ServiceRegistrar, srv TimerServiceServer) {
+	s.RegisterService(&TimerService_ServiceDesc, srv)
+}
+
+func _TimerService_Create_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Timer)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TimerServiceServer).Create(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/schnutibox.v1.TimerService/Create",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TimerServiceServer).Create(ctx, req.(*Timer))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TimerService_Get_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(TimerEmpty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TimerServiceServer).Get(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/schnutibox.v1.TimerService/Get",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TimerServiceServer).Get(ctx, req.(*TimerEmpty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// TimerService_ServiceDesc is the grpc.ServiceDesc for TimerService service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var TimerService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "schnutibox.v1.TimerService",
+	HandlerType: (*TimerServiceServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "Create",
+			Handler:    _TimerService_Create_Handler,
+		},
+		{
+			MethodName: "Get",
+			Handler:    _TimerService_Get_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "schnutibox.proto",
+}

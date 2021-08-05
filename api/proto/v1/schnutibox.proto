@@ -2,6 +2,7 @@ syntax = "proto3";
 package schnutibox.v1;
 option go_package = "go.xsfx.dev/schnutibox/pkg/api/v1";
 import "google/api/annotations.proto";
+import "google/protobuf/duration.proto";
 
 service IdentifierService {
   rpc Identify (IdentifyRequest) returns (IdentifyResponse) {
@@ -20,3 +21,25 @@ message IdentifyResponse {
   string name = 1;
   repeated string uris = 2;
 }
+
+service TimerService {
+  rpc Create(Timer) returns (Timer) {
+    option (google.api.http) = {
+      post: "/v1/timer/set"
+      body: "*"
+    };
+  }
+
+  rpc Get(TimerEmpty) returns (Timer) {
+    option (google.api.http) = {
+      get: "/v1/timer/get"
+    };
+  }
+}
+
+message Timer {
+  google.protobuf.Duration duration = 1;
+  google.protobuf.Duration current = 2;
+}
+
+message TimerEmpty {}

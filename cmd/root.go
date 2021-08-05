@@ -1,4 +1,4 @@
-//nolint:exhaustivestruct,gochecknoglobals,gochecknoinits
+//nolint:exhaustivestruct,gochecknoglobals,gochecknoinits,gomnd
 package cmd
 
 import (
@@ -27,7 +27,12 @@ var rootCmd = &cobra.Command{
 }
 
 // init initializes the command line interface.
+//
+// nolint:funlen
 func init() {
+	// Root.
+	rootCmd.PersistentFlags().Bool("pprof", false, "Enables pprof for debugging")
+
 	// Run.
 	rootCmd.AddCommand(runCmd)
 	runCmd.Flags().StringVarP(&cfgFile, "config", "c", "", "config file")
@@ -35,6 +40,8 @@ func init() {
 	if err := runCmd.MarkFlagRequired("config"); err != nil {
 		log.Fatal().Err(err).Msg("missing flag")
 	}
+
+	runCmd.Flags().Bool("ignore-reader", false, "Ignoring that the reader is missing")
 
 	// Prepare.
 	rootCmd.AddCommand(prepareCmd)
@@ -57,12 +64,9 @@ func init() {
 	if err := webCmd.MarkFlagRequired("config"); err != nil {
 		log.Fatal().Err(err).Msg("missing flag")
 	}
-}
 
-// initConfig loads the config file.
-// fatal defines if config parsing should end in a fatal error or not.
-func initConfig(fatal bool) {
-	logger := log.With().Str("config", cfgFile).Logger()
+	// Timer.
+	rootCmd.AddCommand(timerCmd)
 
 	// Defaults.
 	viper.SetDefault("box.hostname", "localhost")
@@ -71,6 +75,8 @@ func initConfig(fatal bool) {
 	viper.SetDefault("mpd.hostname", "localhost")
 	viper.SetDefault("mpd.port", 6600)
 	viper.SetDefault("reader.dev", "/dev/hidraw0")
+	viper.SetDefault("reader.ignore", false)
+	viper.SetDefault("pprof", false)
 
 	// Environment handling.
 	viper.SetEnvPrefix("SCHNUTIBOX")
@@ -78,9 +84,23 @@ func initConfig(fatal bool) {
 	viper.AutomaticEnv()
 
 	// Flags.
-	if err := viper.BindPFlag("reader.dev", prepareCmd.Flags().Lookup("rfid-reader")); err != nil {
-		logger.Fatal().Err(err).Msg("could not bind flag")
+	if err := viper.BindPFlag("pprof", rootCmd.PersistentFlags().Lookup("pprof")); err != nil {
+		log.Fatal().Err(err).Msg("could not bind flag")
 	}
+
+	if err := viper.BindPFlag("reader.dev", prepareCmd.Flags().Lookup("rfid-reader")); err != nil {
+		log.Fatal().Err(err).Msg("could not bind flag")
+	}
+
+	if err := viper.BindPFlag("reader.ignore", runCmd.Flags().Lookup("ignore-reader")); err != nil {
+		log.Fatal().Err(err).Msg("could not bind flag")
+	}
+}
+
+// initConfig loads the config file.
+// fatal defines if config parsing should end in a fatal error or not.
+func initConfig(fatal bool) {
+	logger := log.With().Str("config", cfgFile).Logger()
 
 	// Parse config file.
 	if cfgFile != "" {

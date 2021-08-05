@@ -33,12 +33,13 @@ steps:
       - name: swap
         path: /SWAP
     commands:
-      - apk add --no-cache openssh-client
-      - wget https://raw.githubusercontent.com/xsteadfastx/docker-qemu-alpine/main/ssh
-      - chmod 600 ssh
+      - apk add --no-cache openssh-client curl
+      - mkdir ~/.ssh
+      - curl https://raw.githubusercontent.com/xsteadfastx/docker-qemu-alpine/main/ssh -o ~/.ssh/id_rsa
+      - chmod 600 ~/.ssh/id_rsa
       - wget -O /usr/local/bin/don https://git.xsfx.dev/attachments/8f8f4dbb-8254-448a-a549-552f8b96cb26
       - chmod +x /usr/local/bin/don
-      - don -t 15m -r 15s -c "ssh -i ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 root@qemu-alpine"
+      - don -t 15m -r 15s -c "ssh  -o StrictHostKeyChecking=no -o ConnectTimeout=10 root@qemu-alpine"
       - cat scripts/rpi-image-test/build.sh | ssh -i ssh -o StrictHostKeyChecking=no root@qemu-alpine
       - ssh -i ssh -o StrictHostKeyChecking=no root@qemu-alpine poweroff
       - ls -lah /SWAP
@@ -55,8 +56,6 @@ steps:
       - make test-integration
     depends_on:
       - test
-      - docker
-      - qemu-alpine
       - create-image
 
   - name: create-torrent
@@ -108,8 +107,6 @@ steps:
     depends_on:
       - test
       - lint
-      - prepare-image
-      - docker
     when:
       event:
         - tag

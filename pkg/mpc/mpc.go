@@ -7,13 +7,11 @@ import (
 
 	"github.com/fhs/gompd/v2/mpd"
 	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/log"
 	"go.xsfx.dev/schnutibox/internal/config"
 	"go.xsfx.dev/schnutibox/internal/metrics"
 )
 
 const (
-	tickerTime  = time.Second
 	timeout     = 5 * time.Second
 	timeoutWait = time.Second / 2
 )
@@ -30,7 +28,7 @@ func Conn() (*mpd.Client, error) {
 		default:
 			c, err := mpd.Dial("tcp", fmt.Sprintf("%s:%d", config.Cfg.MPD.Hostname, config.Cfg.MPD.Port))
 			if err != nil {
-				log.Error().Err(err).Msg("could not connect")
+				// log.Error().Err(err).Msg("could not connect")
 
 				time.Sleep(timeoutWait)
 
@@ -69,45 +67,6 @@ func PlaylistURIS() ([]string, error) {
 	}
 
 	return uris, nil
-}
-
-func Watcher() {
-	log.Debug().Msg("starting watch")
-
-	ticker := time.NewTicker(tickerTime)
-
-	go func() {
-		for {
-			<-ticker.C
-
-			m, err := Conn()
-			if err != nil {
-				log.Error().Err(err).Msg("could not connect")
-
-				continue
-			}
-
-			uris, err := PlaylistURIS()
-			if err != nil {
-				log.Error().Err(err).Msg("could not get playlist uris")
-				metrics.BoxErrors.Inc()
-
-				continue
-			}
-
-			// Gettings MPD state.
-			s, err := m.Status()
-			if err != nil {
-				log.Error().Err(err).Msg("could not get status")
-				metrics.BoxErrors.Inc()
-
-				continue
-			}
-
-			// Sets the metrics.
-			metrics.Set(uris, s["state"])
-		}
-	}()
 }
 
 func Stop(logger zerolog.Logger) error {
