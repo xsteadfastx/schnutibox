@@ -5,11 +5,13 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/fsnotify/fsnotify"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 	"go.xsfx.dev/schnutibox/internal/config"
 	"go.xsfx.dev/schnutibox/pkg/prepare"
@@ -67,16 +69,23 @@ func init() {
 
 	// Timer.
 	rootCmd.AddCommand(timerCmd)
+	timerCmd.Flags().String("hostname", "localhost", "Hostname of schnutibox")
+	timerCmd.Flags().Int("port", 6600, "Port of schnutibox")
+	timerCmd.Flags().DurationP("duration", "d", time.Minute, "Duration until the timer stops the playback")
+
+	if err := timerCmd.MarkFlagRequired("duration"); err != nil {
+		log.Fatal().Err(err).Msg("missing flag")
+	}
 
 	// Defaults.
 	viper.SetDefault("box.hostname", "localhost")
 	viper.SetDefault("box.port", 9999)
-	viper.SetDefault("box.grpc", 9998)
 	viper.SetDefault("mpd.hostname", "localhost")
 	viper.SetDefault("mpd.port", 6600)
 	viper.SetDefault("reader.dev", "/dev/hidraw0")
 	viper.SetDefault("reader.ignore", false)
-	viper.SetDefault("pprof", false)
+	viper.SetDefault("debug.pprof", false)
+	viper.SetDefault("timer.duration", time.Minute)
 
 	// Environment handling.
 	viper.SetEnvPrefix("SCHNUTIBOX")
@@ -84,16 +93,17 @@ func init() {
 	viper.AutomaticEnv()
 
 	// Flags.
-	if err := viper.BindPFlag("pprof", rootCmd.PersistentFlags().Lookup("pprof")); err != nil {
-		log.Fatal().Err(err).Msg("could not bind flag")
-	}
-
-	if err := viper.BindPFlag("reader.dev", prepareCmd.Flags().Lookup("rfid-reader")); err != nil {
-		log.Fatal().Err(err).Msg("could not bind flag")
-	}
-
-	if err := viper.BindPFlag("reader.ignore", runCmd.Flags().Lookup("ignore-reader")); err != nil {
-		log.Fatal().Err(err).Msg("could not bind flag")
+	for k, v := range map[string]*pflag.Flag{
+		"debug.pprof":    rootCmd.PersistentFlags().Lookup("pprof"),
+		"reader.dev":     prepareCmd.Flags().Lookup("rfid-reader"),
+		"reader.ignore":  runCmd.Flags().Lookup("ignore-reader"),
+		"box.hostname":   timerCmd.Flags().Lookup("hostname"),
+		"box.port":       timerCmd.Flags().Lookup("port"),
+		"timer.duration": timerCmd.Flags().Lookup("duration"),
+	} {
+		if err := viper.BindPFlag(k, v); err != nil {
+			log.Fatal().Err(err).Msg("could not bind flag")
+		}
 	}
 }
 
@@ -103,18 +113,25 @@ func initConfig(fatal bool) {
 	logger := log.With().Str("config", cfgFile).Logger()
 
 	// Parse config file.
-	if cfgFile != "" {
-		viper.SetConfigFile(cfgFile)
-		parseConfig(logger, fatal)
-	} else {
+	if cfgFile == "" && fatal {
 		logger.Fatal().Msg("missing config file")
+	} else {
+		logger.Warn().Msg("missing config file")
 	}
 
-	viper.WatchConfig()
-	viper.OnConfigChange(func(e fsnotify.Event) {
-		logger.Info().Msg("config file changed")
-		parseConfig(logger, false)
-	})
+	// Dont mind if there is no config file... viper also should populate
+	// flags and environment variables.
+	viper.SetConfigFile(cfgFile)
+	parseConfig(logger, fatal)
+
+	// Configfile changes watch only enabled if there is a config file.
+	if cfgFile != "" {
+		viper.WatchConfig()
+		viper.OnConfigChange(func(e fsnotify.Event) {
+			logger.Info().Msg("config file changed")
+			parseConfig(logger, false)
+		})
+	}
 }
 
 // parseConfig parses the config and does some tests if required fields are there.
@@ -126,8 +143,6 @@ func parseConfig(logger zerolog.Logger, fatal bool) {
 		}
 
 		logger.Error().Err(err).Msg("error loading config file")
-
-		return
 	}
 
 	if err := viper.Unmarshal(&config.Cfg); err != nil {
@@ -136,16 +151,22 @@ func parseConfig(logger zerolog.Logger, fatal bool) {
 		}
 
 		logger.Error().Err(err).Msg("could not unmarshal config")
-
-		return
 	}
 
-	if err := config.Cfg.Require(); err != nil {
-		if fatal {
-			logger.Fatal().Err(err).Msg("missing config parts")
-		}
+	// Disabling require check if no config is set.
+	// Not sure about this!
+	if cfgFile != "" {
+		if err := config.Cfg.Require(); err != nil {
+			if fatal {
+				logger.Fatal().Err(err).Msg("missing config parts")
+			}
 
-		logger.Error().Err(err).Msg("missing config parts")
+			logger.Error().Err(err).Msg("missing config parts")
+
+			return
+		}
+	} else {
+		logger.Warn().Msg("doesnt do a config requirement check")
 
 		return
 	}

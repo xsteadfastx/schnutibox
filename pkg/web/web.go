@@ -9,10 +9,10 @@ import (
 	"strings"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	zerolog "github.com/philip-bui/grpc-zerolog"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 	"go.xsfx.dev/logginghandler"
 	assets "go.xsfx.dev/schnutibox/assets/web"
 	"go.xsfx.dev/schnutibox/internal/config"
@@ -81,14 +81,14 @@ func (i identifyServer) Identify(ctx context.Context, in *api.IdentifyRequest) (
 type timerServer struct{}
 
 func (t timerServer) Create(ctx context.Context, req *api.Timer) (*api.Timer, error) {
-	timer.T = req
+	timer.T.Req = req
 
-	return timer.T, nil
+	return timer.T.Req, nil
 }
 
 // Get just returns the status of the timer.
 func (t timerServer) Get(ctx context.Context, req *api.TimerEmpty) (*api.Timer, error) {
-	return timer.T, nil
+	return timer.T.Req, nil
 }
 
 func gw(s *grpc.Server, conn string) *runtime.ServeMux {
@@ -114,7 +114,9 @@ func Run(command *cobra.Command, args []string) {
 	lh := fmt.Sprintf("%s:%d", config.Cfg.Box.Hostname, config.Cfg.Box.Port)
 
 	// Create grpc server.
-	grpcServer := grpc.NewServer()
+	grpcServer := grpc.NewServer(
+		zerolog.UnaryInterceptor(),
+	)
 
 	// Define http handlers.
 	mux := http.NewServeMux()
@@ -138,7 +140,7 @@ func Run(command *cobra.Command, args []string) {
 	mux.Handle("/api/", http.StripPrefix("/api", gw(grpcServer, lh)))
 
 	// PPROF.
-	if viper.GetBool("pprof") {
+	if config.Cfg.Debug.PPROF {
 		mux.HandleFunc("/debug/pprof/", pprof.Index)
 	}
 

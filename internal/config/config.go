@@ -11,6 +11,10 @@ import (
 var Cfg Config
 
 type Config struct {
+	Debug struct {
+		PPROF bool `mapstructure:"PPROF"`
+	}
+
 	// Reader is used to configure the RFID Reader.
 	Reader struct {
 		Dev string `mapstructure:"Dev"`

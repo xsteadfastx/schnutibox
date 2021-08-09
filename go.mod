@@ -8,14 +8,17 @@ require (
 	github.com/containerd/continuity v0.0.0-20210208174643-50096c924a4e // indirect
 	github.com/fhs/gompd/v2 v2.2.0
 	github.com/fsnotify/fsnotify v1.4.7
+	github.com/golang/protobuf v1.5.2
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.4.0
 	github.com/helloyi/go-sshclient v1.0.0
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51 // indirect
 	github.com/moby/term v0.0.0-20201216013528-df9cb8a40635 // indirect
 	github.com/ory/dockertest/v3 v3.6.3
+	github.com/philip-bui/grpc-zerolog v1.0.1
 	github.com/prometheus/client_golang v0.9.3
 	github.com/rs/zerolog v1.22.0
 	github.com/spf13/cobra v1.1.3
+	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.7.0
 	github.com/tmc/scp v0.0.0-20170824174625-f7b48647feef
 	go.xsfx.dev/don v1.0.0

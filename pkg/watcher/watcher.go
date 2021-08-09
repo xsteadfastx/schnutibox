@@ -23,19 +23,20 @@ func Run() {
 			<-ticker.C
 
 			// Timer.
-			go timer.Timer()
+			go timer.T.Handle()
 
 			// Metrics.
 			go func() {
 				m, err := mpc.Conn()
 				if err != nil {
-					// log.Error().Err(err).Msg("could not connect")
+					log.Error().Err(err).Msg("could not connect")
+
 					return
 				}
 
 				uris, err := mpc.PlaylistURIS()
 				if err != nil {
-					// log.Error().Err(err).Msg("could not get playlist uris")
+					log.Error().Err(err).Msg("could not get playlist uris")
 					metrics.BoxErrors.Inc()
 
 					return
@@ -44,7 +45,7 @@ func Run() {
 				// Gettings MPD state.
 				s, err := m.Status()
 				if err != nil {
-					// log.Error().Err(err).Msg("could not get status")
+					log.Error().Err(err).Msg("could not get status")
 					metrics.BoxErrors.Inc()
 
 					return

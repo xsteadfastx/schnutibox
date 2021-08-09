@@ -156,6 +156,7 @@ github.com/golang/glog
 # github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e
 github.com/golang/groupcache/lru
 # github.com/golang/protobuf v1.5.2
+## explicit
 github.com/golang/protobuf/descriptor
 github.com/golang/protobuf/jsonpb
 github.com/golang/protobuf/proto
@@ -268,6 +269,9 @@ github.com/ory/dockertest/v3/docker/types/strslice
 github.com/ory/dockertest/v3/docker/types/versions
 # github.com/pelletier/go-toml v1.2.0
 github.com/pelletier/go-toml
+# github.com/philip-bui/grpc-zerolog v1.0.1
+## explicit
+github.com/philip-bui/grpc-zerolog
 # github.com/pkg/errors v0.9.1
 github.com/pkg/errors
 # github.com/pkg/profile v1.5.0
@@ -306,6 +310,7 @@ github.com/spf13/cobra
 # github.com/spf13/jwalterweatherman v1.0.0
 github.com/spf13/jwalterweatherman
 # github.com/spf13/pflag v1.0.5
+## explicit
 github.com/spf13/pflag
 # github.com/spf13/viper v1.7.0
 ## explicit
