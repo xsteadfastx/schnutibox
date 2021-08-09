@@ -20,11 +20,11 @@ type Config struct {
 		Dev string `mapstructure:"Dev"`
 	} `mapstructure:"Reader"`
 
-	// Box is used to configure a webinterface.
-	Box struct {
+	// Web is used to configure the webinterface.
+	Web struct {
 		Hostname string `mapstructure:"Hostname"`
 		Port     int    `mapstructure:"Port"`
-	} `mapstructure:"Box"`
+	} `mapstructure:"Web"`
 
 	// MPD contains the connection details for the Music Player Daemon.
 	MPD struct {

@@ -111,7 +111,7 @@ func gw(s *grpc.Server, conn string) *runtime.ServeMux {
 
 func Run(command *cobra.Command, args []string) {
 	// Create host string for serving web.
-	lh := fmt.Sprintf("%s:%d", config.Cfg.Box.Hostname, config.Cfg.Box.Port)
+	lh := fmt.Sprintf("%s:%d", config.Cfg.Web.Hostname, config.Cfg.Web.Port)
 
 	// Create grpc server.
 	grpcServer := grpc.NewServer(

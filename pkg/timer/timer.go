@@ -58,7 +58,7 @@ func (t *Timer) Handle() {
 
 // Run is the command line interface for triggering the timer.
 func Run(cmd *cobra.Command, args []string) {
-	conn, err := grpcclient.Conn(config.Cfg.Box.Hostname, config.Cfg.Box.Port)
+	conn, err := grpcclient.Conn(config.Cfg.Web.Hostname, config.Web.Box.Port)
 	if err != nil {
 		log.Fatal().Err(err).Msg("could not connect")
 	}

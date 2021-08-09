@@ -78,8 +78,8 @@ func init() {
 	}
 
 	// Defaults.
-	viper.SetDefault("box.hostname", "localhost")
-	viper.SetDefault("box.port", 9999)
+	viper.SetDefault("web.hostname", "localhost")
+	viper.SetDefault("web.port", 9999)
 	viper.SetDefault("mpd.hostname", "localhost")
 	viper.SetDefault("mpd.port", 6600)
 	viper.SetDefault("reader.dev", "/dev/hidraw0")
@@ -97,8 +97,8 @@ func init() {
 		"debug.pprof":    rootCmd.PersistentFlags().Lookup("pprof"),
 		"reader.dev":     prepareCmd.Flags().Lookup("rfid-reader"),
 		"reader.ignore":  runCmd.Flags().Lookup("ignore-reader"),
-		"box.hostname":   timerCmd.Flags().Lookup("hostname"),
-		"box.port":       timerCmd.Flags().Lookup("port"),
+		"web.hostname":   timerCmd.Flags().Lookup("hostname"),
+		"web.port":       timerCmd.Flags().Lookup("port"),
 		"timer.duration": timerCmd.Flags().Lookup("duration"),
 	} {
 		if err := viper.BindPFlag(k, v); err != nil {
