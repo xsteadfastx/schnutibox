@@ -64,7 +64,7 @@ func boxService(filename string, enable bool) error {
 		return fmt.Errorf("could not get service file: %w", err)
 	}
 
-	//nolint:gosec
+	//nolint:gosec,gomnd
 	if err := ioutil.WriteFile(filename, schnutiboxService, 0o644); err != nil {
 		return fmt.Errorf("could not write service file: %w", err)
 	}
@@ -106,7 +106,7 @@ func ntp() error {
 		return fmt.Errorf("could not get ntp service file: %w", err)
 	}
 
-	// nolint:gosec
+	// nolint:gosec,gomnd
 	if err := ioutil.WriteFile("/etc/systemd/system/ntp.service", ntpService, 0o644); err != nil {
 		return fmt.Errorf("could not copy ntp service file: %w", err)
 	}
@@ -397,7 +397,7 @@ func cmdlineTxt() error {
 	newLine := strings.TrimSuffix(string(oldLine), "\n") + " " + "fastboot" + " " + "noswap"
 
 	// Write.
-	// nolint:gosec
+	// nolint:gosec,gomnd
 	if err := ioutil.WriteFile("/boot/cmdline.txt", []byte(newLine), 0o644); err != nil {
 		return fmt.Errorf("could not write cmdline.txt: %w", err)
 	}
@@ -617,7 +617,7 @@ func upmpdcli() error {
 		return fmt.Errorf("could not get upmpdcli.conf: %w", err)
 	}
 
-	// nolint:gosec
+	// nolint:gosec,gomnd
 	if err := ioutil.WriteFile("/etc/upmpdcli.conf", upmpdcliConf, 0o644); err != nil {
 		return fmt.Errorf("could not copy upmpdcli config: %w", err)
 	}
