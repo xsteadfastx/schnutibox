@@ -11,7 +11,7 @@ steps:
       - git fetch --tags
 
   - name: lint
-    image: golangci/golangci-lint:v1.39.0
+    image: golangci/golangci-lint:v1.41.1
     commands:
       - make install-tools
       - make lint
