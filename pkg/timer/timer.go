@@ -14,6 +14,7 @@ import (
 	"google.golang.org/protobuf/types/known/durationpb"
 )
 
+// T is the global Timer object.
 // nolint:gochecknoglobals
 var T = &Timer{}
 
@@ -38,7 +39,7 @@ func (t *Timer) Handle() {
 				Msg("timer is running")
 
 			if t.Req.Current.Seconds > 0 {
-				t.Req.Current.Seconds -= 1
+				t.Req.Current.Seconds--
 
 				return
 			}
