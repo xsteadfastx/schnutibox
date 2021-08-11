@@ -7,6 +7,7 @@ import (
 
 	"github.com/fhs/gompd/v2/mpd"
 	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 	"go.xsfx.dev/schnutibox/internal/config"
 	"go.xsfx.dev/schnutibox/internal/metrics"
 )
@@ -28,7 +29,7 @@ func Conn() (*mpd.Client, error) {
 		default:
 			c, err := mpd.Dial("tcp", fmt.Sprintf("%s:%d", config.Cfg.MPD.Hostname, config.Cfg.MPD.Port))
 			if err != nil {
-				// log.Error().Err(err).Msg("could not connect")
+				log.Error().Err(err).Msg("could not connect")
 
 				time.Sleep(timeoutWait)
 
