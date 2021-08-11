@@ -69,8 +69,10 @@ func Run(cmd *cobra.Command, args []string) {
 
 	_, err = c.Create(context.Background(), &api.Timer{Duration: d})
 	if err != nil {
+		conn.Close()
 		log.Fatal().Err(err).Msg("could not create timer")
 	}
 
+	conn.Close()
 	log.Info().Msg("added timer")
 }
