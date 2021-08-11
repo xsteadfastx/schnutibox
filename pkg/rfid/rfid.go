@@ -65,7 +65,7 @@ func (r *RFID) Run() error {
 	}
 
 	go func() {
-		buf := make([]byte, 3)
+		buf := make([]byte, 3) // nolint:gomnd
 
 		rfid := ""
 
