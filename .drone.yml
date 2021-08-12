@@ -2,7 +2,7 @@
 kind: pipeline
 name: default
 node:
-  runner: hetzner
+  runner: troy
 
 steps:
   - name: tags
