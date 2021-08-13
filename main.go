@@ -12,7 +12,7 @@ import (
 
 func main() {
 	sselog.Log = sselog.NewSSELog()
-	log.Logger = zerolog.New(io.MultiWriter(os.Stderr, sselog.Log)).With().Caller().Logger()
+	log.Logger = zerolog.New(io.MultiWriter(zerolog.ConsoleWriter{Out: os.Stderr}, sselog.Log)).With().Caller().Logger()
 
 	cmd.Execute()
 }
