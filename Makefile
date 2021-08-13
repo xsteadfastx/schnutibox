@@ -52,5 +52,4 @@ install-tools:
 
 .PHONY: grpc-gen
 grpc-gen:
-	buf beta mod update
 	buf generate -v

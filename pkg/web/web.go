@@ -106,6 +106,10 @@ func gw(s *grpc.Server, conn string) *runtime.ServeMux {
 		log.Fatal().Err(err).Msg("could not register grpc endpoint")
 	}
 
+	if err := api.RegisterTimerServiceHandlerFromEndpoint(ctx, gwmux, conn, gopts); err != nil {
+		log.Fatal().Err(err).Msg("could not register grpc endpoint")
+	}
+
 	return gwmux
 }
 
@@ -137,7 +141,7 @@ func Run(command *cobra.Command, args []string) {
 
 	mux.Handle("/metrics", promhttp.Handler())
 
-	mux.Handle("/api/", http.StripPrefix("/api", gw(grpcServer, lh)))
+	mux.Handle("/api/", gw(grpcServer, lh))
 
 	// PPROF.
 	if config.Cfg.Debug.PPROF {

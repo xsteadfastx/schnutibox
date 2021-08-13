@@ -7,7 +7,7 @@ import "google/protobuf/duration.proto";
 service IdentifierService {
   rpc Identify (IdentifyRequest) returns (IdentifyResponse) {
     option (google.api.http) = {
-      post: "/v1/identify"
+      post: "/api/v1/identify"
       body: "*"
     };
   }
@@ -25,14 +25,14 @@ message IdentifyResponse {
 service TimerService {
   rpc Create(Timer) returns (Timer) {
     option (google.api.http) = {
-      post: "/v1/timer/set"
+      post: "/api/v1/timer"
       body: "*"
     };
   }
 
   rpc Get(TimerEmpty) returns (Timer) {
     option (google.api.http) = {
-      get: "/v1/timer/get"
+      get: "/api/v1/timer"
     };
   }
 }

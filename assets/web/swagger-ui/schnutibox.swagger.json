@@ -19,7 +19,7 @@
     "application/json"
   ],
   "paths": {
-    "/v1/identify": {
+    "/api/v1/identify": {
       "post": {
         "operationId": "IdentifierService_Identify",
         "responses": {
@@ -51,7 +51,7 @@
         ]
       }
     },
-    "/v1/timer/get": {
+    "/api/v1/timer": {
       "get": {
         "operationId": "TimerService_Get",
         "responses": {
@@ -71,9 +71,7 @@
         "tags": [
           "TimerService"
         ]
-      }
-    },
-    "/v1/timer/set": {
+      },
       "post": {
         "operationId": "TimerService_Create",
         "responses": {

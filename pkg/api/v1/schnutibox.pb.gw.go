@@ -266,7 +266,7 @@ func RegisterIdentifierServiceHandlerClient(ctx context.Context, mux *runtime.Se
 }
 
 var (
-	pattern_IdentifierService_Identify_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"v1", "identify"}, ""))
+	pattern_IdentifierService_Identify_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"api", "v1", "identify"}, ""))
 )
 
 var (
@@ -355,9 +355,9 @@ func RegisterTimerServiceHandlerClient(ctx context.Context, mux *runtime.ServeMu
 }
 
 var (
-	pattern_TimerService_Create_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "timer", "set"}, ""))
+	pattern_TimerService_Create_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"api", "v1", "timer"}, ""))
 
-	pattern_TimerService_Get_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "timer", "get"}, ""))
+	pattern_TimerService_Get_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"api", "v1", "timer"}, ""))
 )
 
 var (
