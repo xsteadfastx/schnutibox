@@ -20,6 +20,7 @@ require (
 	github.com/spf13/cobra v1.1.3
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.7.0
+	github.com/stretchr/testify v1.7.0
 	github.com/tmc/scp v0.0.0-20170824174625-f7b48647feef
 	go.xsfx.dev/don v1.0.0
 	go.xsfx.dev/logginghandler v0.0.4

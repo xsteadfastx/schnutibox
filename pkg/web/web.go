@@ -78,16 +78,16 @@ func (i identifyServer) Identify(ctx context.Context, in *api.IdentifyRequest) (
 	return r, nil
 }
 
-type timerServer struct{}
+type TimerServer struct{}
 
-func (t timerServer) Create(ctx context.Context, req *api.Timer) (*api.Timer, error) {
+func (t TimerServer) Create(ctx context.Context, req *api.Timer) (*api.Timer, error) {
 	timer.T.Req = req
 
 	return timer.T.Req, nil
 }
 
 // Get just returns the status of the timer.
-func (t timerServer) Get(ctx context.Context, req *api.TimerEmpty) (*api.Timer, error) {
+func (t TimerServer) Get(ctx context.Context, req *api.TimerEmpty) (*api.Timer, error) {
 	return timer.T.Req, nil
 }
 
@@ -96,7 +96,7 @@ func gw(s *grpc.Server, conn string) *runtime.ServeMux {
 	gopts := []grpc.DialOption{grpc.WithInsecure()}
 
 	api.RegisterIdentifierServiceServer(s, identifyServer{})
-	api.RegisterTimerServiceServer(s, timerServer{})
+	api.RegisterTimerServiceServer(s, TimerServer{})
 
 	// Adds reflections.
 	reflection.Register(s)
