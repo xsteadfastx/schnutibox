@@ -35,6 +35,7 @@ changelog:
       - "^docs:"
       - "^test:"
       - "^ci:"
+      - "^dev:"
       - "happy linting"
 
 release:
