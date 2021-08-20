@@ -115,7 +115,7 @@ func initConfig(fatal bool) {
 	// Parse config file.
 	if cfgFile == "" && fatal {
 		logger.Fatal().Msg("missing config file")
-	} else {
+	} else if cfgFile == "" {
 		logger.Warn().Msg("missing config file")
 	}
 
