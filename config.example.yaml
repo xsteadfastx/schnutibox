@@ -1,0 +1,17 @@
+---
+Reader:
+  Dev: /dev/hidraw4
+
+Meta:
+  Stop: "0000350934"
+
+Tracks:
+  "0000224543":
+    name: scarlett begonias
+    uris:
+      - "https://ia902608.us.archive.org/3/items/gd1977-05-08.shure57.stevenson.29303.flac16/gd1977-05-08d02t04.ogg"
+
+  "0000195026":
+    name: they love eachother
+    uris:
+      - "https://ia802608.us.archive.org/3/items/gd1977-05-08.shure57.stevenson.29303.flac16/gd1977-05-08d01t05.ogg"

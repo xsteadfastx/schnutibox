@@ -6,8 +6,9 @@ require (
 	github.com/Microsoft/go-winio v0.4.16 // indirect
 	github.com/bufbuild/buf v0.37.0
 	github.com/containerd/continuity v0.0.0-20210208174643-50096c924a4e // indirect
+	github.com/cosmtrek/air v1.27.3
 	github.com/fhs/gompd/v2 v2.2.0
-	github.com/fsnotify/fsnotify v1.4.7
+	github.com/fsnotify/fsnotify v1.4.9
 	github.com/golang/protobuf v1.5.2
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.4.0
 	github.com/helloyi/go-sshclient v1.0.0

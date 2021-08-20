@@ -41,15 +41,12 @@ build-image:
 
 .PHONY: install-tools
 install-tools:
-	go install -v \
-		github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway \
-		github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-openapiv2 \
-		google.golang.org/protobuf/cmd/protoc-gen-go \
-		google.golang.org/grpc/cmd/protoc-gen-go-grpc \
-		github.com/bufbuild/buf/cmd/buf \
-		github.com/bufbuild/buf/cmd/protoc-gen-buf-breaking \
-		github.com/bufbuild/buf/cmd/protoc-gen-buf-lint
+	  @cat tools.go | grep _ | awk -F'"' '{print $$2}' | xargs -tI % go install %
 
 .PHONY: grpc-gen
 grpc-gen:
 	buf generate -v
+
+.PHONY: air
+air:
+	air

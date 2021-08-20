@@ -135,16 +135,24 @@ github.com/cenkalti/backoff/v3
 # github.com/containerd/continuity v0.0.0-20210208174643-50096c924a4e
 ## explicit
 github.com/containerd/continuity/pathdriver
+# github.com/cosmtrek/air v1.27.3
+## explicit
+github.com/cosmtrek/air
+github.com/cosmtrek/air/runner
+# github.com/creack/pty v1.1.11
+github.com/creack/pty
 # github.com/davecgh/go-spew v1.1.1
 github.com/davecgh/go-spew/spew
 # github.com/docker/go-connections v0.4.0
 github.com/docker/go-connections/nat
 # github.com/docker/go-units v0.4.0
 github.com/docker/go-units
+# github.com/fatih/color v1.10.0
+github.com/fatih/color
 # github.com/fhs/gompd/v2 v2.2.0
 ## explicit
 github.com/fhs/gompd/v2/mpd
-# github.com/fsnotify/fsnotify v1.4.7
+# github.com/fsnotify/fsnotify v1.4.9
 ## explicit
 github.com/fsnotify/fsnotify
 # github.com/ghodss/yaml v1.0.0
@@ -203,6 +211,8 @@ github.com/hashicorp/hcl/json/token
 # github.com/helloyi/go-sshclient v1.0.0
 ## explicit
 github.com/helloyi/go-sshclient
+# github.com/imdario/mergo v0.3.12
+github.com/imdario/mergo
 # github.com/inconshreveable/mousetrap v1.0.0
 github.com/inconshreveable/mousetrap
 # github.com/jhump/protoreflect v1.8.1
@@ -229,6 +239,10 @@ github.com/klauspost/compress/zstd/internal/xxhash
 github.com/klauspost/pgzip
 # github.com/magiconair/properties v1.8.1
 github.com/magiconair/properties
+# github.com/mattn/go-colorable v0.1.8
+github.com/mattn/go-colorable
+# github.com/mattn/go-isatty v0.0.12
+github.com/mattn/go-isatty
 # github.com/matttproud/golang_protobuf_extensions v1.0.1
 github.com/matttproud/golang_protobuf_extensions/pbutil
 # github.com/mitchellh/mapstructure v1.1.2
@@ -269,7 +283,7 @@ github.com/ory/dockertest/v3/docker/types/network
 github.com/ory/dockertest/v3/docker/types/registry
 github.com/ory/dockertest/v3/docker/types/strslice
 github.com/ory/dockertest/v3/docker/types/versions
-# github.com/pelletier/go-toml v1.2.0
+# github.com/pelletier/go-toml v1.8.1
 github.com/pelletier/go-toml
 # github.com/philip-bui/grpc-zerolog v1.0.1
 ## explicit
