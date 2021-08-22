@@ -88,6 +88,11 @@ func (t TimerServer) Create(ctx context.Context, req *api.Timer) (*api.Timer, er
 
 // Get just returns the status of the timer.
 func (t TimerServer) Get(ctx context.Context, req *api.TimerEmpty) (*api.Timer, error) {
+	// Nothing there yet, so return a fresh struct.
+	if timer.T.Req == nil {
+		return &api.Timer{}, nil
+	}
+
 	return timer.T.Req, nil
 }
 
