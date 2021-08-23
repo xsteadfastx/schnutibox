@@ -11,9 +11,19 @@ generate:
 	go generate
 
 .PHONY: lint
-lint:
+lint: lint-go lint-buf lint-js
+
+.PHONY: lint-go
+lint-go:
 	golangci-lint run --timeout 10m --enable-all --disable=exhaustivestruct
+
+.PHONY: lint-buf
+lint-buf:
 	buf lint -v
+
+.PHONY: lint-js
+lint-js:
+	eslint assets/web/files/**.js
 
 .PHONY: test
 test:

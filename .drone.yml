@@ -14,7 +14,8 @@ steps:
     image: golangci/golangci-lint:v1.42.0
     commands:
       - make install-tools
-      - make lint
+      - make lint-go
+      - make lint-buf
     depends_on:
       - tags
 
