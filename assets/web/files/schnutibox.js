@@ -11,7 +11,7 @@ if(typeof(EventSource) !== "undefined") {
         document.getElementById("log").innerHTML = "Sorry, your browser does not support server-sent events...";
 }
 
-function handleSubmit(event) {
+function handleSubmit(event, url) {
   event.preventDefault()
 
   var data = new FormData(event.target)
@@ -21,10 +21,10 @@ function handleSubmit(event) {
   console.log(jsonValue)
 
   var xhr = new XMLHttpRequest()
-  xhr.open("POST", "/api/v1/timer")
+  xhr.open("POST", url)
   xhr.setRequestHeader("Content-Type", "application/json")
   xhr.send(jsonValue)
 }
 
 var timerForm = document.querySelector('#timerForm')
-timerForm.addEventListener('submit', handleSubmit)
+timerForm.addEventListener('submit', function(){handleSubmit(event, "/api/v1/timer")})
