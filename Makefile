@@ -60,3 +60,12 @@ grpc-gen:
 .PHONY: air
 air:
 	air
+
+.PHONY: drone-local
+drone-local:
+	drone exec --trusted --timeout 5h
+
+.PHONY: clean
+clean:
+	rm -rf node_modules
+	rm -rf package* || exit 0

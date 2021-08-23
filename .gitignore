@@ -2,3 +2,5 @@ config.y*
 dist/
 .envrc
 tmp/*
+node_modules/*
+package*

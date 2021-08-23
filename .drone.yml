@@ -19,6 +19,26 @@ steps:
     depends_on:
       - tags
 
+  - name: lint-js
+    image: alpine:3.14
+    commands:
+      - >
+        apk add
+        make
+        nodejs
+        npm
+      - >
+        npm install
+        eslint
+        prettier
+        eslint-plugin-prettier
+        eslint-config-prettier
+      - export PATH=$PWD/node_modules/.bin:$PATH
+      - make lint-js
+      - make clean
+    depends_on:
+      - tags
+
   - name: test
     image: golang:1.16
     pull: always
@@ -46,6 +66,8 @@ steps:
       - ssh -i ssh -o StrictHostKeyChecking=no root@qemu-alpine poweroff
       - ls -lah /SWAP
     depends_on:
+      - lint
+      - lint-js
       - test
 
   - name: prepare-image
@@ -57,6 +79,8 @@ steps:
       - (cd /tmp; go install -v github.com/goreleaser/goreleaser@v0.169.0)
       - make test-integration
     depends_on:
+      - lint
+      - lint-js
       - test
       - create-image
 
@@ -80,6 +104,8 @@ steps:
     commands:
       - make build
     depends_on:
+      - lint
+      - lint-js
       - test
       - prepare-image
     when:
@@ -109,6 +135,7 @@ steps:
     depends_on:
       - test
       - lint
+      - lint-js
     when:
       event:
         - tag
