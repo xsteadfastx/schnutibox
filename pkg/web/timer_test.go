@@ -1,4 +1,3 @@
-//nolint:paralleltest
 package web_test
 
 import (
@@ -12,6 +11,8 @@ import (
 )
 
 func TestTimerService(t *testing.T) {
+	t.Parallel()
+
 	tables := []struct {
 		name     string
 		req      *api.Timer
