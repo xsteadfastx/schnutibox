@@ -48,12 +48,7 @@ func Conn() (*mpd.Client, error) {
 }
 
 // PlaylistURIS extracts uris from MPD playlist.
-func PlaylistURIS() ([]string, error) {
-	m, err := Conn()
-	if err != nil {
-		return nil, fmt.Errorf("could not connect to MPD server :%w", err)
-	}
-
+func PlaylistURIS(m *mpd.Client) ([]string, error) {
 	attrs, err := m.PlaylistInfo(-1, -1)
 	if err != nil {
 		return nil, fmt.Errorf("could not get playlist: %w", err)
@@ -129,7 +124,7 @@ func Play(logger zerolog.Logger, rfid string, name string, uris []string) error 
 
 	// Getting playlist uris from MPD server.
 	// This is needed to identify the right metric to use.
-	mpdURIS, err := PlaylistURIS()
+	mpdURIS, err := PlaylistURIS(m)
 	if err != nil {
 		metrics.BoxErrors.Inc()
 

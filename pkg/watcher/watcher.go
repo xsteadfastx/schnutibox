@@ -34,7 +34,7 @@ func Run() {
 					return
 				}
 
-				uris, err := mpc.PlaylistURIS()
+				uris, err := mpc.PlaylistURIS(m)
 				if err != nil {
 					log.Error().Err(err).Msg("could not get playlist uris")
 					metrics.BoxErrors.Inc()
