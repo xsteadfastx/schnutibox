@@ -1,6 +1,6 @@
 if(typeof(EventSource) !== "undefined") {
-        var source = new EventSource("/log");
-        source.onmessage = function(event) {
+        var logSource = new EventSource("/log");
+        logSource.onmessage = function(event) {
                 var j = JSON.parse(event.data);
                 /* eslint-disable no-prototype-builtins */
                 if (j.hasOwnProperty("message")) {
@@ -10,6 +10,15 @@ if(typeof(EventSource) !== "undefined") {
 } else {
         document.getElementById("log").innerHTML = "Sorry, your browser does not support server-sent events...";
 }
+
+if(typeof(EventSource) !== "undefined") {
+  var currentsongSource = new EventSource("/currentsong");
+  currentsongSource.onmessage = function(event){
+    document.getElementById("currentsong").innerHTML = event.data
+  };
+} else {
+        document.getElementById("currentsong").innerHTML = "Sorry, your browser does not support server-sent events...";
+};
 
 function handleSubmit(event, url) {
   event.preventDefault()

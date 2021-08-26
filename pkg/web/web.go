@@ -17,6 +17,7 @@ import (
 	assets "go.xsfx.dev/schnutibox/assets/web"
 	"go.xsfx.dev/schnutibox/internal/config"
 	api "go.xsfx.dev/schnutibox/pkg/api/v1"
+	"go.xsfx.dev/schnutibox/pkg/currentsong"
 	"go.xsfx.dev/schnutibox/pkg/sselog"
 	"go.xsfx.dev/schnutibox/pkg/timer"
 	"golang.org/x/net/http2"
@@ -96,6 +97,8 @@ func (t TimerServer) Get(ctx context.Context, req *api.TimerEmpty) (*api.Timer, 
 	return timer.T.Req, nil
 }
 
+func currentSong(w http.ResponseWriter, r *http.Request) {}
+
 func gw(s *grpc.Server, conn string) *runtime.ServeMux {
 	ctx := context.Background()
 	gopts := []grpc.DialOption{grpc.WithInsecure()}
@@ -133,6 +136,7 @@ func Run(command *cobra.Command, args []string) {
 	mux.Handle("/", http.HandlerFunc(root))
 
 	mux.Handle("/log", http.HandlerFunc(sselog.LogHandler))
+	mux.Handle("/currentsong", http.HandlerFunc(currentsong.Handler))
 
 	mux.Handle(
 		"/static/",

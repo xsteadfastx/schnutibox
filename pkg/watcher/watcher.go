@@ -1,10 +1,12 @@
 package watcher
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/rs/zerolog/log"
 	"go.xsfx.dev/schnutibox/internal/metrics"
+	"go.xsfx.dev/schnutibox/pkg/currentsong"
 	"go.xsfx.dev/schnutibox/pkg/mpc"
 	"go.xsfx.dev/schnutibox/pkg/timer"
 )
@@ -49,6 +51,20 @@ func Run() {
 					metrics.BoxErrors.Inc()
 
 					return
+				}
+
+				currentSong, err := m.CurrentSong()
+				if err != nil {
+					log.Error().Err(err).Msg("could not get current song")
+					metrics.BoxErrors.Inc()
+
+					return
+				}
+
+				if len(currentSong) != 0 {
+					currentsong.Write(fmt.Sprintf("%s - %s", currentSong["Artist"], currentSong["Track"]))
+				} else {
+					currentsong.Write("")
 				}
 
 				// Sets the metrics.
