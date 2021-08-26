@@ -40,7 +40,7 @@ steps:
       - tags
 
   - name: test
-    image: golang:1.16
+    image: golang:1.17
     pull: always
     commands:
       - make test
@@ -71,7 +71,7 @@ steps:
       - test
 
   - name: prepare-image
-    image: golang:1.16
+    image: golang:1.17
     volumes:
       - name: dockersock
         path: /var/run
@@ -100,7 +100,7 @@ steps:
       - prepare-image
 
   - name: build
-    image: goreleaser/goreleaser:v0.169.0
+    image: goreleaser/goreleaser:v0.176.0
     commands:
       - make build
     depends_on:
@@ -114,7 +114,7 @@ steps:
           - tag
 
   - name: release
-    image: goreleaser/goreleaser:v0.169.0
+    image: goreleaser/goreleaser:v0.176.0
     volumes:
       - name: dockersock
         path: /var/run

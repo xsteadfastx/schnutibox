@@ -15,7 +15,7 @@ lint: lint-go lint-buf lint-js
 
 .PHONY: lint-go
 lint-go:
-	golangci-lint run --timeout 10m --enable-all --disable=exhaustivestruct
+	golangci-lint run --timeout 10m --enable-all --disable=exhaustivestruct,godox
 
 .PHONY: lint-buf
 lint-buf:
